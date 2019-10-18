@@ -208,11 +208,10 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public void authenticate(JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) {
-        SecurityClientFactory.setVersion(jenkinsSettings.getVersion());
         if (jenkinsSettings.isSecurityMode()) {
-            securityClient = SecurityClientFactory.basic(jenkinsSettings.getUsername(), jenkinsSettings.getPassword(), jenkinsSettings.getCrumbData());
+            securityClient = SecurityClientFactory.basic(jenkinsSettings.getUsername(), jenkinsSettings.getPassword(), jenkinsSettings.getCrumbData(), jenkinsSettings.getVersion());
         } else {
-            securityClient = SecurityClientFactory.none(jenkinsSettings.getCrumbData());
+            securityClient = SecurityClientFactory.none(jenkinsSettings.getCrumbData(), jenkinsSettings.getVersion());
         }
         securityClient.connect(urlBuilder.createAuthenticationUrl(jenkinsAppSettings.getServerUrl()));
 
@@ -221,11 +220,10 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public void authenticate(String serverUrl, String username, String password, String crumbData, JenkinsVersion version) {
-        SecurityClientFactory.setVersion(version);
         if (StringUtils.isNotBlank(username)) {
-            securityClient = SecurityClientFactory.basic(username, password, crumbData);
+            securityClient = SecurityClientFactory.basic(username, password, crumbData, version);
         } else {
-            securityClient = SecurityClientFactory.none(crumbData);
+            securityClient = SecurityClientFactory.none(crumbData, version);
         }
         securityClient.connect(urlBuilder.createAuthenticationUrl(serverUrl));
     }

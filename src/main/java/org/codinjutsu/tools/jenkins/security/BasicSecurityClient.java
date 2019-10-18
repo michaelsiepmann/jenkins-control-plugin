@@ -36,8 +36,8 @@ class BasicSecurityClient extends DefaultSecurityClient {
     private String password;
 
 
-    BasicSecurityClient(String username, String password, String crumbData) {
-        super(crumbData);
+    BasicSecurityClient(String username, String password, String crumbData, JenkinsVersion jenkinsVersion) {
+        super(crumbData, jenkinsVersion);
         this.username = username;
         this.password = password;
     }
@@ -68,7 +68,7 @@ class BasicSecurityClient extends DefaultSecurityClient {
             post.setDoAuthentication(true);
             int responseCode = httpClient.executeMethod(post);
             final String responseBody;
-            try(InputStream inputStream = post.getResponseBodyAsStream();) {
+            try (InputStream inputStream = post.getResponseBodyAsStream();) {
                 responseBody = IOUtils.toString(inputStream, post.getResponseCharSet());
             }
             if (responseCode != HttpURLConnection.HTTP_OK) {

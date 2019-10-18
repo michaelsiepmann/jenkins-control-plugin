@@ -46,15 +46,16 @@ class DefaultSecurityClient implements SecurityClient {
     private static final int DEFAULT_SOCKET_TIMEOUT = 10000;
     private static final int DEFAULT_CONNECTION_TIMEOUT = 10000;
 
-    protected String crumbData;
-    protected JenkinsVersion jenkinsVersion = JenkinsVersion.VERSION_1;
+    final String crumbData;
+    final JenkinsVersion jenkinsVersion;
 
-    protected final HttpClient httpClient;
-    protected Map<String, VirtualFile> files = new HashMap<>();
+    final HttpClient httpClient;
+    private Map<String, VirtualFile> files = new HashMap<>();
 
-    DefaultSecurityClient(String crumbData) {
+    DefaultSecurityClient(String crumbData, JenkinsVersion jenkinsVersion) {
         this.httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
         this.crumbData = crumbData;
+        this.jenkinsVersion = jenkinsVersion;
     }
 
     @Override
@@ -178,9 +179,5 @@ class DefaultSecurityClient implements SecurityClient {
             this.data = body;
         }
 
-    }
-
-    public void setJenkinsVersion(JenkinsVersion jenkinsVersion) {
-        this.jenkinsVersion = jenkinsVersion;
     }
 }

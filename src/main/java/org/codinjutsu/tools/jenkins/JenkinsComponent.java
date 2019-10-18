@@ -31,7 +31,7 @@ import javax.swing.*;
 public class JenkinsComponent implements ProjectComponent, SearchableConfigurable {
 
 
-    private static final String JENKINS_CONTROL_PLUGIN_NAME = "Jenkins Plugin";
+    static final String JENKINS_CONTROL_PLUGIN_NAME = "Jenkins Plugin";
     private static final String JENKINS_CONTROL_COMPONENT_NAME = "JenkinsComponent";
 
     private final JenkinsAppSettings jenkinsAppSettings;
