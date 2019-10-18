@@ -33,14 +33,14 @@ import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.codinjutsu.tools.jenkins.view.BuildParamDialog;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+import javax.swing.Icon;
 import java.util.concurrent.TimeUnit;
 
 public class RunBuildAction extends AnAction implements DumbAware {
 
     private static final Icon EXECUTE_ICON = GuiUtil.isUnderDarcula() ? GuiUtil.loadIcon("execute_dark.png") : GuiUtil.loadIcon("execute.png");
     private static final Logger LOG = Logger.getLogger(RunBuildAction.class.getName());
-    public static final int BUILD_STATUS_UPDATE_DELAY = 1;
+    private static final int BUILD_STATUS_UPDATE_DELAY = 1;
 
     private final BrowserPanel browserPanel;
 
@@ -52,7 +52,7 @@ public class RunBuildAction extends AnAction implements DumbAware {
 
 
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void actionPerformed(@NotNull AnActionEvent event) {
         final Project project = ActionUtil.getProject(event);
 
         final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
@@ -63,19 +63,11 @@ public class RunBuildAction extends AnAction implements DumbAware {
                 @Override
                 public void onSuccess() {
                     notifyOnGoingMessage(job);
-                    ExecutorService.getInstance(project).getExecutor().schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            GuiUtil.runInSwingThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    final Job newJob = browserPanel.getJob(job.getName());
-                                    browserPanel.loadJob(newJob);
-                                }
-                            });
-                        }
-                    }, BUILD_STATUS_UPDATE_DELAY, TimeUnit.SECONDS); //FIXME check delay coud be in settings
-
+                    ExecutorService.getInstance(project).getExecutor().schedule(() ->
+                            GuiUtil.runInSwingThread(() -> {
+                                final Job newJob = browserPanel.getJob(job.getName());
+                                browserPanel.loadJob(newJob);
+                            }), BUILD_STATUS_UPDATE_DELAY, TimeUnit.SECONDS); //FIXME check delay coud be in settings
                 }
 
                 @Override

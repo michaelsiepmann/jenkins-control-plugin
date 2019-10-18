@@ -17,31 +17,32 @@
 package org.codinjutsu.tools.jenkins.view;
 
 import com.intellij.ui.ColoredListCellRenderer;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import org.codinjutsu.tools.jenkins.model.FavoriteView;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class JenkinsNestedViewComboRenderer extends ColoredListCellRenderer {
+public class JenkinsNestedViewComboRenderer extends ColoredListCellRenderer<View> {
 
     private static final Icon FAVORITE_ICON = GuiUtil.loadIcon("star.png");
 
     @Override
-    protected void customizeCellRenderer(JList list, Object value, int index, boolean selected, boolean hasFocus) {
+    protected void customizeCellRenderer(@NotNull JList list, View value, int index, boolean selected, boolean hasFocus) {
 
-        if (value instanceof View) {
-            View view = (View) value;
-            if (view.hasNestedView()) {
+        if (value != null) {
+            if (value.hasNestedView()) {
                 setEnabled(false);
                 setFocusable(false);
-                setBackground(Color.LIGHT_GRAY);
-                append(view.getName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+                setBackground(JBColor.LIGHT_GRAY);
+                append(value.getName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
             } else {
-                String viewName = view.getName();
-                if (view.isNested()) {
+                String viewName = value.getName();
+                if (value.isNested()) {
                     append("   " + viewName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 } else {
                     append(viewName, SimpleTextAttributes.REGULAR_ATTRIBUTES);

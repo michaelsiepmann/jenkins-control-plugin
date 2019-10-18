@@ -16,7 +16,7 @@
 
 package org.codinjutsu.tools.jenkins.view;
 
-import com.intellij.codeStyle.CodeStyleFacade;
+import com.intellij.application.options.CodeStyle;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
@@ -35,12 +35,28 @@ import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.util.HtmlUtil;
 import org.codinjutsu.tools.jenkins.view.action.UploadPatchToJob;
 
-import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.MutableComboBoxModel;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SelectJobDialog extends JDialog {
 
@@ -51,11 +67,11 @@ public class SelectJobDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox jobsList;
-    private JList changedFilesList;
+    private JComboBox<String> jobsList;
+    private JList<String> changedFilesList;
     private JScrollPane changedFilesPane;
 
-    private DefaultComboBoxModel listModel = new DefaultComboBoxModel();
+    private MutableComboBoxModel<String> listModel = new DefaultComboBoxModel<>();
 
     private Project project;
 
@@ -79,17 +95,9 @@ public class SelectJobDialog extends JDialog {
 
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(event -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -100,17 +108,13 @@ public class SelectJobDialog extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private void fillJobList(List<Job> jobs) {
+    private void fillJobList(Collection<Job> jobs) {
         if (null != jobs) {
             if (!jobs.isEmpty()) {
-                for(Job job: jobs) {
+                for (Job job : jobs) {
                     if (job.hasParameters() && job.hasParameter(UploadPatchToJob.PARAMETER_NAME)) {
                         listModel.addElement(job.getName());
                     }
@@ -123,19 +127,19 @@ public class SelectJobDialog extends JDialog {
 
     private void fillChangedFilesList() {
 
-        DefaultListModel model = new DefaultListModel();
+        DefaultListModel<String> model = new DefaultListModel<>();
 
         if (changeLists != null && (changeLists.length > 0)) {
             StringBuilder builder = new StringBuilder();
 
             int count = 1;
-            for(ChangeList changeList: changeLists) {
+            for (ChangeList changeList : changeLists) {
                 builder.append(changeList.getName());
                 if (count < changeLists.length) {
                     builder.append(", ");
                 }
                 if (changeList.getChanges().size() > 0) {
-                    for(Change change: changeList.getChanges()) {
+                    for (Change change : changeList.getChanges()) {
                         VirtualFile virtualFile = change.getVirtualFile();
                         if (null != virtualFile) {
                             model.addElement(virtualFile.getPath());
@@ -154,14 +158,14 @@ public class SelectJobDialog extends JDialog {
 
     private boolean createPatch() throws IOException, VcsException {
         FileWriter writer = new FileWriter(FILENAME);
-        ArrayList<Change> changes = new ArrayList<Change>();
+        Collection<Change> changes = new ArrayList<>();
         if (changeLists.length > 0) {
-            for(ChangeList changeList: changeLists) {
+            for (ChangeList changeList : changeLists) {
                 changes.addAll(changeList.getChanges());
             }
         }
         List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(project, changes, project.getBaseDir().getPresentableUrl(), false);
-        UnifiedDiffWriter.write(project, patches, writer, CodeStyleFacade.getInstance(project).getLineSeparator(), null);
+        UnifiedDiffWriter.write(project, patches, writer, CodeStyle.getSettings(project).getLineSeparator(), null);
         writer.close();
 
         return true;
@@ -169,7 +173,7 @@ public class SelectJobDialog extends JDialog {
 
     private void watchJob(BrowserPanel browserPanel, Job job) {
         if (changeLists.length > 0) {
-            for(ChangeList list: changeLists) {
+            for (ChangeList list : changeLists) {
                 browserPanel.addToWatch(list.getName(), job);
             }
         }
@@ -187,15 +191,15 @@ public class SelectJobDialog extends JDialog {
                         if (selectedJob.hasParameters()) {
                             if (selectedJob.hasParameter(UploadPatchToJob.PARAMETER_NAME)) {
                                 JenkinsAppSettings settings = JenkinsAppSettings.getSafeInstance(project);
-                                Map<String, VirtualFile> files = new HashMap<String, VirtualFile>();
+                                Map<String, VirtualFile> files = new HashMap<>();
                                 VirtualFile virtualFile = UploadPatchToJob.prepareFile(browserPanel, LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(FILENAME)), settings, selectedJob);
                                 if (virtualFile != null && virtualFile.exists()) {
                                     files.put(UploadPatchToJob.PARAMETER_NAME, virtualFile);
                                     requestManager.runBuild(selectedJob, settings, files);
                                     //browserPanel.loadSelectedJob();
                                     browserPanel.notifyInfoJenkinsToolWindow(HtmlUtil.createHtmlLinkMessage(
-                                        selectedJob.getName() + " build is on going",
-                                        selectedJob.getUrl())
+                                            selectedJob.getName() + " build is on going",
+                                            selectedJob.getUrl())
                                     );
 
                                     watchJob(browserPanel, selectedJob);
@@ -214,7 +218,7 @@ public class SelectJobDialog extends JDialog {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            String message = String.format("Build cannot be run: " + e.getMessage());
+            String message = String.format("Build cannot be run: %s", e.getMessage());
             LOG.info(message);
             browserPanel.notifyErrorJenkinsToolWindow(message);
         }

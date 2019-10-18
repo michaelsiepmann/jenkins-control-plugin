@@ -18,6 +18,7 @@ package org.codinjutsu.tools.jenkins;
 
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.ide.passwordSafe.PasswordSafeException;
+import com.intellij.ide.passwordSafe.PasswordStorage;
 import com.intellij.ide.passwordSafe.impl.PasswordSafeImpl;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -28,25 +29,25 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 @State(
         name = "Jenkins.Settings",
         storages = {
-                @Storage(id = "JenkinsSettings", file = "$WORKSPACE_FILE$")
+                @Storage("$WORKSPACE_FILE$")
         }
 )
 public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings.State> {
 
     private static final Logger LOG = Logger.getInstance(JenkinsSettings.class.getName());
 
-    public static final String JENKINS_SETTINGS_PASSWORD_KEY = "JENKINS_SETTINGS_PASSWORD_KEY";
+    private static final String JENKINS_SETTINGS_PASSWORD_KEY = "JENKINS_SETTINGS_PASSWORD_KEY";
 
     private State myState = new State();
 
@@ -62,7 +63,7 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
     }
 
     @Override
-    public void loadState(State state) {
+    public void loadState(@NotNull State state) {
         XmlSerializerUtil.copyBean(state, myState);
     }
 
@@ -85,7 +86,7 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
     public String getPassword() {
         String password;
         try {
-            PasswordSafeImpl passwordSafe = (PasswordSafeImpl) PasswordSafe.getInstance();
+            PasswordStorage passwordSafe = PasswordSafe.getInstance();
             password = passwordSafe.getPassword(null, JenkinsAppSettings.class, JENKINS_SETTINGS_PASSWORD_KEY);
         } catch (PasswordSafeException e) {
             LOG.info("Couldn't get password for key [" + JENKINS_SETTINGS_PASSWORD_KEY + "]", e);
@@ -103,13 +104,12 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
         }
     }
 
-    public void addFavorite(List<Job> jobs) {
+    public void addFavorite(Iterable<Job> jobs) {
         for (Job job : jobs) {
             FavoriteJob favoriteJob = new FavoriteJob();
             favoriteJob.name = job.getName();
             favoriteJob.url = job.getUrl();
             myState.favoriteJobs.add(favoriteJob);
-
         }
     }
 
@@ -122,14 +122,9 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
         return false;
     }
 
-    public void removeFavorite(List<Job> selectedJobs) {//TODO need to refactor
+    public void removeFavorite(Iterable<Job> selectedJobs) {//TODO need to refactor
         for (Job selectedJob : selectedJobs) {
-            for (Iterator<FavoriteJob> iterator = myState.favoriteJobs.iterator(); iterator.hasNext(); ) {
-                FavoriteJob favoriteJob = iterator.next();
-                if (StringUtils.equals(selectedJob.getName(), favoriteJob.name)) {
-                    iterator.remove();
-                }
-            }
+            myState.favoriteJobs.removeIf(favoriteJob -> StringUtils.equals(selectedJob.getName(), favoriteJob.name));
         }
     }
 
@@ -161,19 +156,19 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
         this.myState.jenkinsVersion = jenkinsVersion;
     }
 
-    public static class State {
+    static class State {
 
-        public static final String RESET_STR_VALUE = "";
+        static final String RESET_STR_VALUE = "";
 
-        public String username = RESET_STR_VALUE;
+        String username = RESET_STR_VALUE;
 
-        public String crumbData = RESET_STR_VALUE;
+        String crumbData = RESET_STR_VALUE;
 
-        public String lastSelectedView;
+        String lastSelectedView;
 
-        public List<FavoriteJob> favoriteJobs = new LinkedList<FavoriteJob>();
+        List<FavoriteJob> favoriteJobs = new LinkedList<>();
 
-        public JenkinsVersion jenkinsVersion = JenkinsVersion.VERSION_1;
+        JenkinsVersion jenkinsVersion = JenkinsVersion.VERSION_1;
 
     }
 

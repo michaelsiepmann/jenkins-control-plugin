@@ -17,23 +17,24 @@
 package org.codinjutsu.tools.jenkins.view;
 
 import com.intellij.ui.ColoredListCellRenderer;
-import com.intellij.ui.SimpleTextAttributes;
 import org.codinjutsu.tools.jenkins.model.FavoriteView;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
+import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JList;
 
-public class JenkinsViewComboRenderer extends ColoredListCellRenderer {
+import static com.intellij.ui.SimpleTextAttributes.REGULAR_ATTRIBUTES;
+
+public class JenkinsViewComboRenderer extends ColoredListCellRenderer<View> {
 
     private static final Icon FAVORITE_ICON = GuiUtil.loadIcon("star.png");
 
     @Override
-    protected void customizeCellRenderer(JList list, Object value, int index, boolean selected, boolean hasFocus) {
-
-        if (value instanceof View) {
-            View view = (View) value;
-            append(view.getName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    protected void customizeCellRenderer(@NotNull JList list, View value, int index, boolean selected, boolean hasFocus) {
+        if (value != null) {
+            append(value.getName(), REGULAR_ATTRIBUTES);
 
             if (value instanceof FavoriteView) {
                 setIcon(FAVORITE_ICON);

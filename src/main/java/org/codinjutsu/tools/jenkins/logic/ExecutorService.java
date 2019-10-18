@@ -3,6 +3,7 @@ package org.codinjutsu.tools.jenkins.logic;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -22,7 +23,7 @@ public class ExecutorService {
         return ServiceManager.getService(project, ExecutorService.class);
     }
 
-    public void safeTaskCancel(ScheduledFuture<?> futureTask) {
+    public void safeTaskCancel(Future<?> futureTask) {
         if (futureTask == null) {
             return;
         }

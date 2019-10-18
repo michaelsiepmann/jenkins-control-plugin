@@ -20,7 +20,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.util.IOUtils;
 
@@ -33,7 +33,7 @@ import java.net.URL;
 class BasicSecurityClient extends DefaultSecurityClient {
 
     private final String username;
-    private String password = null;
+    private String password;
 
 
     BasicSecurityClient(String username, String password, String crumbData) {

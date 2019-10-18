@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class JenkinsJsonParserTest {
 
         List<View> actualViews = jenkins.getViews();
 
-        List<View> expectedViews = new LinkedList<View>();
+        Collection<View> expectedViews = new LinkedList<>();
         expectedViews.add(View.createView("Framework", "http://myjenkins/view/Framework/"));
         View nestedView = View.createView("NestedView", "http://myjenkins/view/NestedView/");
 
@@ -78,7 +79,7 @@ public class JenkinsJsonParserTest {
     public void loadClassicView() throws Exception {
         List<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadClassicView.json")));
 
-        List<Job> expectedJobs = new LinkedList<Job>();
+        Collection<Job> expectedJobs = new LinkedList<>();
         expectedJobs.add(new JobBuilder().job("sql-tools", "blue", "http://myjenkins/job/sql-tools/", "true", "true")
                 .lastBuild("http://myjenkins/job/sql-tools/15/", "15", SUCCESS.getStatus(), "false", "2012-04-02_15-26-29", 1477640156281l, 4386421l)
                 .health("health-80plus", "0 tests en echec sur un total de 24 tests").get());
@@ -102,7 +103,7 @@ public class JenkinsJsonParserTest {
     public void loadClassicViewWithEmptyBooleans() throws Exception {
         List<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManger_loadWithEmptyBooleans.json")));
 
-        List<Job> expectedJobs = new LinkedList<Job>();
+        Collection<Job> expectedJobs = new LinkedList<>();
         expectedJobs.add(new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "false", "false")
                 .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281l, 4386421l)
                 .health("health20to39", "0 tests en echec sur un total de 24 tests")

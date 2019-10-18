@@ -112,11 +112,13 @@ import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.codinjutsu.tools.jenkins.view.JenkinsNestedViewComboRenderer;
 import org.codinjutsu.tools.jenkins.view.JenkinsViewComboRenderer;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -134,7 +136,7 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
     public SelectViewAction(final BrowserPanel browserPanel) {
         this.browserPanel = browserPanel;
         myPanel = new JPanel();
-        final BoxLayout layout = new BoxLayout(myPanel, BoxLayout.X_AXIS);
+        final LayoutManager layout = new BoxLayout(myPanel, BoxLayout.X_AXIS);
         myPanel.setLayout(layout);
         myLabel = new JLabel();
         final JLabel show = new JLabel("View:");
@@ -156,7 +158,7 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
             unflattenViews.add(FavoriteView.create());
         }
 
-        final JBList viewList = new JBList(unflattenViews);
+        final JBList<View> viewList = new JBList<>(unflattenViews);
 
         if (hasNestedViews(unflattenViews)) {
             viewList.setCellRenderer(new JenkinsNestedViewComboRenderer());
@@ -177,24 +179,23 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
         }
     }
 
+    @NotNull
     @Override
-    public JComponent createCustomComponent(Presentation presentation) {
+    public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
         return myPanel;
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
     }
 
-
-    private static List<View> flatViewList(List<View> views) {
-        List<View> flattenViewList = new LinkedList<View>();
+    @NotNull
+    private static List<View> flatViewList(@NotNull Iterable<View> views) {
+        List<View> flattenViewList = new LinkedList<>();
         for (View view : views) {
             flattenViewList.add(view);
             if (view.hasNestedView()) {
-                for (View subView : view.getSubViews()) {
-                    flattenViewList.add(subView);
-                }
+                flattenViewList.addAll(view.getSubViews());
             }
         }
 
@@ -202,11 +203,8 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
     }
 
 
-    private static boolean hasNestedViews(List<View> views) {
-        for (View view : views) {
-            if (view.hasNestedView()) return true;
-        }
-        return false;
+    private static boolean hasNestedViews(@NotNull Collection<View> views) {
+        return views.stream().anyMatch(View::hasNestedView);
     }
 
     private class MyMouseAdapter extends MouseAdapter {
@@ -222,13 +220,11 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
             JBPopup popup = new PopupChooserBuilder(viewList)
                     .setMovable(false)
                     .setCancelKeyEnabled(true)
-                    .setItemChoosenCallback(new Runnable() {
-                        public void run() {
-                            final View view = (View) viewList.getSelectedValue();
-                            if (view == null || view.hasNestedView()) return;
+                    .setItemChoosenCallback(() -> {
+                        final View view = (View) viewList.getSelectedValue();
+                        if (view == null || view.hasNestedView()) return;
 
-                            browserPanel.loadView(view);
-                        }
+                        browserPanel.loadView(view);
                     })
                     .createPopup();
 

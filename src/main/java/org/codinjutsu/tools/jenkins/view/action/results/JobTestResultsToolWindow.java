@@ -18,7 +18,6 @@ package org.codinjutsu.tools.jenkins.view.action.results;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configuration.ConfigurationFactoryEx;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.ProcessHandler;
@@ -55,8 +54,8 @@ public class JobTestResultsToolWindow {
     }
 
     public void showMavenToolWindow() {
-        ConfigurationType configurationType = new UnknownConfigurationType();
-        ConfigurationFactory configurationFactory = new ConfigurationFactoryEx<UnknownRunConfiguration>(configurationType) {
+        ConfigurationType configurationType = UnknownConfigurationType.getInstance();
+        ConfigurationFactory configurationFactory = new ConfigurationFactory(configurationType) {
             @NotNull
             @Override
             public RunConfiguration createTemplateConfiguration(@NotNull Project project) {

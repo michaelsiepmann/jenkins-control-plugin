@@ -30,12 +30,18 @@ import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.util.HtmlUtil;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
+import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.io.*;
-import java.nio.charset.Charset;
+import javax.swing.Icon;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Description
@@ -45,7 +51,7 @@ import java.util.Map;
 public class UploadPatchToJob extends AnAction implements DumbAware {
 
     public static final String PARAMETER_NAME = "patch.diff";
-    public static final String SUFFIX_JOB_NAME_MACROS = "$JobName$";
+    private static final String SUFFIX_JOB_NAME_MACROS = "$JobName$";
 
     private static final Logger LOG = Logger.getInstance(UploadPatchToJob.class.getName());
     private BrowserPanel browserPanel;
@@ -59,7 +65,7 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void actionPerformed(@NotNull AnActionEvent event) {
         Project project = ActionUtil.getProject(event);
 
         String message = "";
@@ -83,7 +89,7 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
 
                     if ((null != virtualFile)) {
                         if (virtualFile.exists()) {
-                            Map<String, VirtualFile> files = new HashMap<String, VirtualFile>();
+                            Map<String, VirtualFile> files = new HashMap<>();
                             files.put(PARAMETER_NAME, virtualFile);
                             requestManager.runBuild(job, settings, files);
                             notifyOnGoingMessage(job);
@@ -101,7 +107,7 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
             }
 
         } catch (Exception e) {
-            message = String.format("Build cannot be run: " + e.getMessage());
+            message = String.format("Build cannot be run: %s", e.getMessage());
             e.printStackTrace();
         }
 
@@ -117,7 +123,7 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
             InputStream stream = file.getInputStream();
             InputStreamReader streamReader = new InputStreamReader(stream);
             BufferedReader bufferReader = new BufferedReader(streamReader);
-            String line = null;
+            String line;
             String suffix = settings.getSuffix();
             suffix = suffix.replace(SUFFIX_JOB_NAME_MACROS, job.getName());
             StringBuilder builder = new StringBuilder();
@@ -139,7 +145,7 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
             stream.close();
 
             OutputStream outputStream = file.getOutputStream(browserPanel);
-            outputStream.write(builder.toString().getBytes(Charset.forName("UTF-8")));
+            outputStream.write(builder.toString().getBytes(UTF_8));
             outputStream.close();
         }
 

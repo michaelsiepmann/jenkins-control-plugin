@@ -22,6 +22,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import org.codinjutsu.tools.jenkins.logic.RssLogic;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
+import org.jetbrains.annotations.NotNull;
 
 public class RefreshRssAction extends AnAction implements DumbAware {
 
@@ -32,13 +33,8 @@ public class RefreshRssAction extends AnAction implements DumbAware {
 
 
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void actionPerformed(@NotNull AnActionEvent event) {
         Project project = ActionUtil.getProject(event);
         RssLogic.getInstance(project).loadLatestBuilds(true);
-    }
-
-    @Override
-    public void update(AnActionEvent e) {
-        super.update(e);
     }
 }

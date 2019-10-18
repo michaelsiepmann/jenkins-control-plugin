@@ -16,10 +16,11 @@
 
 package org.codinjutsu.tools.jenkins.model;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 
 import javax.swing.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class Job {
 
-    private static final Map<String, Icon> ICON_BY_JOB_HEALTH_MAP = new HashMap<String, Icon>();
+    private static final Map<String, Icon> ICON_BY_JOB_HEALTH_MAP = new HashMap<>();
     private String name;
 
     private String displayName;
@@ -44,7 +45,7 @@ public class Job {
 
     private List<Build> lastBuilds = new LinkedList<>();
 
-    private final List<JobParameter> parameters = new LinkedList<JobParameter>();
+    private final List<JobParameter> parameters = new LinkedList<>();
 
     static {
         ICON_BY_JOB_HEALTH_MAP.put("health-00to19", GuiUtil.loadIcon("health-00to19.png"));
@@ -215,7 +216,7 @@ public class Job {
         }
     }
 
-    public void addParameters(List<JobParameter> jobParameters) {
+    public void addParameters(Collection<JobParameter> jobParameters) {
         parameters.addAll(jobParameters);
     }
 

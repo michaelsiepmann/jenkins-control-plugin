@@ -20,9 +20,9 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.*;
-import com.intellij.openapi.vcs.changes.ui.ChangesListView;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.codinjutsu.tools.jenkins.view.SelectJobDialog;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,7 +37,7 @@ public class CreatePatchAndBuildAction extends AnAction {
     private Project project;
     private ChangeList[] selectedChangeLists;
 
-    public void actionPerformed(AnActionEvent event) {
+    public void actionPerformed(@NotNull AnActionEvent event) {
         project = ActionUtil.getProject(event);
         DataContext dataContext = event.getDataContext();
 
@@ -48,22 +48,20 @@ public class CreatePatchAndBuildAction extends AnAction {
     }
 
     private void showDialog() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+        SwingUtilities.invokeLater(() -> {
 
-                final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
+            final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
 
-                SelectJobDialog dialog = new SelectJobDialog(selectedChangeLists, browserPanel.getJobs(), project);
-                dialog.setLocationRelativeTo(null);
-                dialog.setMaximumSize(new Dimension(300, 200));
-                dialog.pack();
-                dialog.setVisible(true);
-            }
+            SelectJobDialog dialog = new SelectJobDialog(selectedChangeLists, browserPanel.getJobs(), project);
+            dialog.setLocationRelativeTo(null);
+            dialog.setMaximumSize(new Dimension(300, 200));
+            dialog.pack();
+            dialog.setVisible(true);
         });
     }
 
     @Override
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
         boolean enabled = false;
         project = ActionUtil.getProject(event);
         DataContext dataContext = event.getDataContext();

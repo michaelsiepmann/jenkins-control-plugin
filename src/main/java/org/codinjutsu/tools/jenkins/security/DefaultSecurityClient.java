@@ -25,7 +25,7 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.model.VirtualFilePartSource;
 import org.codinjutsu.tools.jenkins.util.IOUtils;
@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 class DefaultSecurityClient implements SecurityClient {
@@ -49,7 +50,7 @@ class DefaultSecurityClient implements SecurityClient {
     protected JenkinsVersion jenkinsVersion = JenkinsVersion.VERSION_1;
 
     protected final HttpClient httpClient;
-    protected Map<String, VirtualFile> files = new HashMap<String, VirtualFile>();
+    protected Map<String, VirtualFile> files = new HashMap<>();
 
     DefaultSecurityClient(String crumbData) {
         this.httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
@@ -81,7 +82,7 @@ class DefaultSecurityClient implements SecurityClient {
 
     private PostMethod addFiles(PostMethod post) {
         if (files.size() > 0) {
-            ArrayList<Part> parts = new ArrayList<Part>();
+            List<Part> parts = new ArrayList<>();
             int i = 0;
             for(String key: files.keySet()) {
                 VirtualFile virtualFile = files.get(key);
@@ -90,7 +91,7 @@ class DefaultSecurityClient implements SecurityClient {
                 parts.add(new FilePart(String.format("file%d", i), new VirtualFilePartSource(virtualFile)));
                 i++;
             }
-            post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
+            post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[0]), post.getParams()));
             files.clear();
         }
 

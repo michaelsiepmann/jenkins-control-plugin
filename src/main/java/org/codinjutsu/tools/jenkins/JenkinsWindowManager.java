@@ -17,19 +17,26 @@
 package org.codinjutsu.tools.jenkins;
 
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
-import com.intellij.openapi.wm.*;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowAnchor;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import org.codinjutsu.tools.jenkins.logic.*;
+import org.codinjutsu.tools.jenkins.logic.BrowserPanelAuthenticationHandler;
+import org.codinjutsu.tools.jenkins.logic.ExecutorService;
+import org.codinjutsu.tools.jenkins.logic.LoginService;
+import org.codinjutsu.tools.jenkins.logic.RssAuthenticationActionHandler;
+import org.codinjutsu.tools.jenkins.logic.RssLogic;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.codinjutsu.tools.jenkins.view.JenkinsWidget;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 public class JenkinsWindowManager {
 
@@ -61,15 +68,12 @@ public class JenkinsWindowManager {
 
         final RssLogic rssLogic = RssLogic.getInstance(project);
 
-        StartupManager.getInstance(project).registerPostStartupActivity(new DumbAwareRunnable() {
-            @Override
-            public void run() {
-                RssAuthenticationActionHandler.getInstance(project);
-                BrowserPanelAuthenticationHandler.getInstance(project);
-                browserPanel.init();
-                rssLogic.init();
-                LoginService.getInstance(project).performAuthentication();
-            }
+        StartupManager.getInstance(project).registerPostStartupActivity(() -> {
+            RssAuthenticationActionHandler.getInstance(project);
+            BrowserPanelAuthenticationHandler.getInstance(project);
+            browserPanel.init();
+            rssLogic.init();
+            LoginService.getInstance(project).performAuthentication();
         });
     }
 

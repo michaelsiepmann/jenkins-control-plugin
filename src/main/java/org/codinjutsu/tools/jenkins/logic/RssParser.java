@@ -17,7 +17,7 @@
 package org.codinjutsu.tools.jenkins.logic;
 
 //import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
@@ -71,7 +71,7 @@ public class RssParser {
 
     private Map<String, Build> createLatestBuildList(Document doc) {
 
-        Map<String, Build> buildMap = new LinkedHashMap<String, Build>();
+        Map<String, Build> buildMap = new LinkedHashMap<>();
         Element rootElement = doc.getRootElement();
 
         List<Element> elements = rootElement.getChildren(RSS_ENTRY, rootElement.getNamespace());

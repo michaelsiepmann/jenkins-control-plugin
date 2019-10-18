@@ -29,7 +29,7 @@ import java.util.Map;
 public class FormValidator<T extends JComponent> {
 
     private final ConfigurationPanel formToValidate;
-    private final HashMap<T, UIValidator<T>> uiValidatorByUiComponent = new HashMap<T, UIValidator<T>>();
+    private final Map<T, UIValidator<T>> uiValidatorByUiComponent = new HashMap<>();
 
 
     private FormValidator(ConfigurationPanel formToValidate) {

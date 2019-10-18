@@ -14,96 +14,76 @@
  * limitations under the License.
  */
 
-package org.codinjutsu.tools.jenkins.model;
+package org.codinjutsu.tools.jenkins.model
 
-import org.apache.commons.lang.StringUtils;
-import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
+import org.apache.commons.lang.StringUtils
+import org.codinjutsu.tools.jenkins.JenkinsAppSettings
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedList
 
-public class Jenkins {
+class Jenkins @JvmOverloads constructor(description: String? = null, serverUrl: String? = null) {
 
-    private String name;
-    private String serverUrl;
+    var name: String? = null
+        private set
+    var serverUrl: String? = null
+        private set
 
-    private List<Job> jobs;
+    private var jobs: MutableList<Job> = mutableListOf()
 
-    private List<View> views;
-    private View primaryView;
+    private var views: MutableList<View> = mutableListOf()
+    var primaryView: View? = null
 
-
-    public Jenkins() {
-        this(null, null);
-    }
-
-    public Jenkins(String description, String serverUrl) {
-        this.name = description;
-        this.serverUrl = serverUrl;
-        this.jobs = new LinkedList<Job>();
-        this.views = new LinkedList<View>();
+    init {
+        this.name = description
+        this.serverUrl = serverUrl
+        this.jobs = LinkedList()
+        this.views = LinkedList()
     }
 
 
-    public void setJobs(List<Job> jobs) {
-        this.jobs = jobs;
+    fun setJobs(jobs: MutableList<Job>) {
+        this.jobs = jobs
     }
 
 
-    public List<Job> getJobs() {
-        return jobs;
+    fun getJobs(): List<Job> {
+        return jobs
     }
 
 
-    public List<View> getViews() {
-        return views;
+    fun getViews(): List<View> {
+        return views
     }
 
 
-    public String getName() {
-        return name;
+    fun setViews(views: MutableList<View>) {
+        this.views = views
     }
 
-
-    public void setViews(List<View> views) {
-        this.views = views;
-    }
-
-
-    public void setPrimaryView(View primaryView) {
-        this.primaryView = primaryView;
-    }
-
-
-    public View getPrimaryView() {
-        return primaryView;
-    }
-
-    public String getServerUrl() {
-        return serverUrl;
-    }
-
-    public View getViewByName(String lastSelectedViewName) {
-        for (View view : views) {
-            if (StringUtils.equals(lastSelectedViewName, view.getName())) {
-                return view;
+    fun getViewByName(lastSelectedViewName: String): View? {
+        for (view in views) {
+            if (StringUtils.equals(lastSelectedViewName, view.name)) {
+                return view
             }
         }
 
-        return null;
+        return null
     }
 
-    public void update(Jenkins jenkins) {
-        this.name = jenkins.getName();
-        this.serverUrl = jenkins.getServerUrl();
-        this.jobs.clear();
-        this.jobs.addAll(jenkins.getJobs());
-        this.views.clear();
-        this.views.addAll(jenkins.getViews());
-        this.primaryView = jenkins.getPrimaryView();
+    fun update(jenkins: Jenkins) {
+        this.name = jenkins.name
+        this.serverUrl = jenkins.serverUrl
+        this.jobs.clear()
+        this.jobs.addAll(jenkins.getJobs())
+        this.views.clear()
+        this.views.addAll(jenkins.getViews())
+        this.primaryView = jenkins.primaryView
     }
 
-    public static Jenkins byDefault() {
-        return new Jenkins("", JenkinsAppSettings.DUMMY_JENKINS_SERVER_URL);
+    companion object {
+
+        fun byDefault(): Jenkins {
+            return Jenkins("", JenkinsAppSettings.DUMMY_JENKINS_SERVER_URL)
+        }
     }
 }

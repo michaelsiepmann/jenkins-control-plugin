@@ -25,7 +25,7 @@ public class LoadBuildsAction extends AnAction implements DumbAware {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void actionPerformed(@NotNull AnActionEvent event) {
         final Project project = ActionUtil.getProject(event);
         final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
 

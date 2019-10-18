@@ -18,6 +18,7 @@ package org.codinjutsu.tools.jenkins.model;
 
 import org.codinjutsu.tools.jenkins.util.DateUtil;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.text.SimpleDateFormat;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class Build {
 
-    public static final Map<BuildStatusEnum, Icon> ICON_BY_BUILD_STATUS_MAP = new HashMap<BuildStatusEnum, Icon>();
+    public static final Map<BuildStatusEnum, Icon> ICON_BY_BUILD_STATUS_MAP = new HashMap<>();
 
     private String url;
     private Date buildDate;
@@ -162,7 +163,7 @@ public class Build {
         this.building = building;
     }
 
-    public boolean isAfter(Build aBuild) {
+    public boolean isAfter(@NotNull Build aBuild) {
         return this.getNumber() > aBuild.getNumber();
     }
 

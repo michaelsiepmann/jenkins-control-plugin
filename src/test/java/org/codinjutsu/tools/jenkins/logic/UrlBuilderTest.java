@@ -45,7 +45,7 @@ public class UrlBuilderTest {
     public void createRunParameterizedJobUrl() throws Exception {
         configuration.setDelay(20);
 
-        Map<String, String> valueByNameParams = new LinkedHashMap<String, String>();
+        Map<String, String> valueByNameParams = new LinkedHashMap<>();
         valueByNameParams.put("param1", "value1");
         valueByNameParams.put("param2", "value2");
 

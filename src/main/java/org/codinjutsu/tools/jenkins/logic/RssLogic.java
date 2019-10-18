@@ -37,9 +37,12 @@ import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.JenkinsWidget;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +54,7 @@ public class RssLogic implements Disposable {
     private final Project project;
     private final JenkinsAppSettings jenkinsAppSettings;
     private final RequestManager requestManager;
-    private Map<String, Build> currentBuildMap = new HashMap<String, Build>();
+    private Map<String, Build> currentBuildMap = new HashMap<>();
 
     private final Runnable refreshRssBuildsJob;
     private ScheduledFuture<?> refreshRssBuildFutureTask;
@@ -64,12 +67,7 @@ public class RssLogic implements Disposable {
         this.project = project;
         this.jenkinsAppSettings = JenkinsAppSettings.getSafeInstance(project);
         this.requestManager = RequestManager.getInstance(project);
-        refreshRssBuildsJob = new Runnable() {
-            @Override
-            public void run() {
-                GuiUtil.runInSwingThread(new LoadLatestBuildsJob(project, true));
-            }
-        };
+        refreshRssBuildsJob = () -> GuiUtil.runInSwingThread(new LoadLatestBuildsJob(project, true));
     }
 
     public void init() {
@@ -96,7 +94,7 @@ public class RssLogic implements Disposable {
 
     private Map<String, Build> loadAndReturnNewLatestBuilds() {
         Map<String, Build> latestBuildMap = requestManager.loadJenkinsRssLatestBuilds(jenkinsAppSettings);
-        Map<String, Build> newBuildMap = new HashMap<String, Build>();
+        Map<String, Build> newBuildMap = new HashMap<>();
         for (Map.Entry<String, Build> entry : latestBuildMap.entrySet()) {
             String jobName = entry.getKey();
             Build newBuild = entry.getValue();
@@ -115,32 +113,33 @@ public class RssLogic implements Disposable {
         return newBuildMap;
     }
 
-    private void sendNotificationForEachBuild(List<Build> buildToSortByDateDescending) {
+    private void sendNotificationForEachBuild(Iterable<Build> buildToSortByDateDescending) {
         for (Build build : buildToSortByDateDescending) {
-            BuildStatusEnum status = build.getStatus();
-            NotificationType notificationType;
-            if (BuildStatusEnum.SUCCESS.equals(status) || BuildStatusEnum.STABLE.equals(status)) {
-                notificationType = NotificationType.INFORMATION;
-            } else if (BuildStatusEnum.FAILURE.equals(status) || (BuildStatusEnum.UNSTABLE.equals(status))) {
-                notificationType = NotificationType.ERROR;
-            } else {
-                notificationType = NotificationType.WARNING;
-            }
+            NotificationType notificationType = getNotificationType(build.getStatus());
             JENKINS_RSS_GROUP
                     .createNotification("", buildMessage(build), notificationType, NotificationListener.URL_OPENING_LISTENER)
                     .notify(project);
         }
     }
 
-    private List<Build> sortByDateDescending(Map<String, Build> finishedBuilds) {
-        final List<Build> buildToSortByDateDescending = new ArrayList<Build>(finishedBuilds.values());
+    @NotNull
+    private NotificationType getNotificationType(BuildStatusEnum status) {
+        switch (status) {
+            case SUCCESS:
+            case STABLE:
+                return NotificationType.INFORMATION;
+            case FAILURE:
+            case UNSTABLE:
+                return NotificationType.ERROR;
+            default:
+                return NotificationType.WARNING;
+        }
+    }
 
-        Collections.sort(buildToSortByDateDescending, new Comparator<Build>() {
-            @Override
-            public int compare(Build firstBuild, Build secondBuild) {
-                return firstBuild.getBuildDate().compareTo(secondBuild.getBuildDate());
-            }
-        });
+    private List<Build> sortByDateDescending(Map<String, Build> finishedBuilds) {
+        final List<Build> buildToSortByDateDescending = new ArrayList<>(finishedBuilds.values());
+
+        buildToSortByDateDescending.sort(Comparator.comparing(Build::getBuildDate));
         return buildToSortByDateDescending;
     }
 
@@ -156,12 +155,7 @@ public class RssLogic implements Disposable {
     private void displayErrorMessageInABalloon(String message) {
         BalloonBuilder balloonBuilder = JBPopupFactory.getInstance().createHtmlTextBalloonBuilder(message, MessageType.ERROR, null);
         final Balloon balloon = balloonBuilder.setFadeoutTime(TimeUnit.SECONDS.toMillis(1)).createBalloon();
-        GuiUtil.runInSwingThread(new Runnable() {
-            @Override
-            public void run() {
-                balloon.show(new RelativePoint(JenkinsWidget.getInstance(project).getComponent(), new Point(0, 0)), Balloon.Position.above);
-            }
-        });
+        GuiUtil.runInSwingThread(() -> balloon.show(new RelativePoint(JenkinsWidget.getInstance(project).getComponent(), new Point(0, 0)), Balloon.Position.above));
     }
 
     private Map.Entry<String, Build> getFirstFailedBuild(Map<String, Build> finishedBuilds) {

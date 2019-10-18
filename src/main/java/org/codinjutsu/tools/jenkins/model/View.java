@@ -29,7 +29,7 @@ public class View {
 
     private boolean isNested;
 
-    private final List<View> subViews = new LinkedList<View>();
+    private final List<View> subViews = new LinkedList<>();
 
     public View() {
     }

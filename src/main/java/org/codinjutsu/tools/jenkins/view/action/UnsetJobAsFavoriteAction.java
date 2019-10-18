@@ -22,6 +22,7 @@ import com.intellij.openapi.project.DumbAware;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class UnsetJobAsFavoriteAction extends AnAction implements DumbAware {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent event) {
+    public void actionPerformed(@NotNull AnActionEvent event) {
         List<Job> selectedJobs = browserPanel.getAllSelectedJobs();
         browserPanel.removeFavorite(selectedJobs);
     }

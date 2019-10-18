@@ -17,7 +17,7 @@
 package org.codinjutsu.tools.jenkins.view;
 
 import com.intellij.openapi.ui.ComboBox;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
@@ -50,7 +50,7 @@ public class BuildParamDialog extends JDialog {
     private final JenkinsAppSettings configuration;
     private final RequestManager requestManager;
     private final RunBuildCallback runBuildCallback;
-    private final Map<JobParameter, JComponent> inputFieldByParameterMap = new HashMap<JobParameter, JComponent>();
+    private final Map<JobParameter, JComponent> inputFieldByParameterMap = new HashMap<>();
 
 // UNSUPPORTED PARAMETERS
 //        FileParameterDefinition
@@ -77,14 +77,12 @@ public class BuildParamDialog extends JDialog {
     }
 
     public static void showDialog(final Job job, final JenkinsAppSettings configuration, final RequestManager requestManager, final RunBuildCallback runBuildCallback) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                BuildParamDialog dialog = new BuildParamDialog(job, configuration, requestManager, runBuildCallback);
-                dialog.setLocationRelativeTo(null);
-                dialog.setMaximumSize(new Dimension(300, 200));
-                dialog.pack();
-                dialog.setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            BuildParamDialog dialog = new BuildParamDialog(job, configuration, requestManager, runBuildCallback);
+            dialog.setLocationRelativeTo(null);
+            dialog.setMaximumSize(new Dimension(300, 200));
+            dialog.pack();
+            dialog.setVisible(true);
         });
     }
 
@@ -126,17 +124,9 @@ public class BuildParamDialog extends JDialog {
     }
 
     private void registerListeners() {
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -145,11 +135,7 @@ public class BuildParamDialog extends JDialog {
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private JComponent createInputField(JobParameter jobParameter) {//TODO add wrapper
@@ -190,7 +176,7 @@ public class BuildParamDialog extends JDialog {
 
             new SwingWorker<Void, Void>(){ //FIXME don't use swing worker
                 @Override
-                protected Void doInBackground() throws Exception {
+                protected Void doInBackground() {
                     requestManager.runParameterizedBuild(job, configuration, paramValueMap);
                     return null;
                 }
@@ -241,7 +227,7 @@ public class BuildParamDialog extends JDialog {
     }
 
     private JComboBox createComboBox(JobParameter jobParameter, String defaultValue) {
-        ComboBox comboBox = new ComboBox(jobParameter.getValues().toArray());
+        ComboBox comboBox = new ComboBox<>(jobParameter.getValues().toArray());
         if (StringUtils.isNotEmpty(defaultValue)) {
             comboBox.setSelectedItem(defaultValue);
         }
@@ -249,7 +235,7 @@ public class BuildParamDialog extends JDialog {
     }
 
     private Map<String, String> getParamValueMap() {//TODO transformer en visiteur
-        HashMap<String, String> valueByNameMap = new HashMap<String, String>();
+        Map<String, String> valueByNameMap = new HashMap<>();
         for (Map.Entry<JobParameter, JComponent> inputFieldByParameter : inputFieldByParameterMap.entrySet()) {
             JobParameter jobParameter = inputFieldByParameter.getKey();
             String name = jobParameter.getName();
@@ -257,15 +243,19 @@ public class BuildParamDialog extends JDialog {
 
             JComponent inputField = inputFieldByParameter.getValue();
 
-            if (JobParameter.JobParameterType.ChoiceParameterDefinition.equals(jobParameterType)) {
-                JComboBox comboBox = (JComboBox) inputField;
-                valueByNameMap.put(name, String.valueOf(comboBox.getSelectedItem()));
-            } else if (JobParameter.JobParameterType.BooleanParameterDefinition.equals(jobParameterType)) {
-                JCheckBox checkBox = (JCheckBox) inputField;
-                valueByNameMap.put(name, Boolean.toString(checkBox.isSelected()));
-            } else if (JobParameter.JobParameterType.StringParameterDefinition.equals(jobParameterType)) {
-                JTextField textField = (JTextField) inputField;
-                valueByNameMap.put(name, textField.getText());
+            switch (jobParameterType) {
+                case ChoiceParameterDefinition:
+                    JComboBox comboBox = (JComboBox) inputField;
+                    valueByNameMap.put(name, String.valueOf(comboBox.getSelectedItem()));
+                    break;
+                case BooleanParameterDefinition:
+                    JCheckBox checkBox = (JCheckBox) inputField;
+                    valueByNameMap.put(name, Boolean.toString(checkBox.isSelected()));
+                    break;
+                case StringParameterDefinition:
+                    JTextField textField = (JTextField) inputField;
+                    valueByNameMap.put(name, textField.getText());
+                    break;
             }
         }
         return valueByNameMap;

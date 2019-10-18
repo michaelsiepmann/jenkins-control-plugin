@@ -16,7 +16,7 @@
 
 package org.codinjutsu.tools.jenkins.logic;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.model.*;
 import org.json.simple.JSONArray;
@@ -62,11 +62,10 @@ public class JenkinsJsonParser implements JenkinsParser {
         return jenkins;
     }
 
-    private List<View> getViews(JSONArray viewsObjects) {
-        List<View> views = new LinkedList<View>();
-        for (Object obj : viewsObjects) {
-            JSONObject viewObject = (JSONObject) obj;
-            views.add(getView(viewObject));
+    private List<View> getViews(Iterable<JSONObject> viewsObjects) {
+        List<View> views = new LinkedList<>();
+        for (JSONObject obj : viewsObjects) {
+            views.add(getView(obj));
         }
 
         return views;
@@ -77,15 +76,15 @@ public class JenkinsJsonParser implements JenkinsParser {
         view.setNested(false);
         String name = (String) viewObject.get(VIEW_NAME);
         if (name != null) {
-            view.setName(name.toString());
+            view.setName(name);
         }
 
         String url = (String) viewObject.get(VIEW_URL);
         if (name != null) {
-            view.setUrl(url.toString());
+            view.setUrl(url);
         }
 
-        JSONArray subViewObjs = (JSONArray) viewObject.get(VIEWS);
+        Iterable subViewObjs = (JSONArray) viewObject.get(VIEWS);
         if (subViewObjs != null) {
             for (Object obj : subViewObjs) {
                 JSONObject subviewObj = (JSONObject) obj;
@@ -184,11 +183,10 @@ public class JenkinsJsonParser implements JenkinsParser {
         return build;
     }
 
-    private List<Build> getBuilds(JSONArray buildsObjects) {
+    private List<Build> getBuilds(Iterable<JSONObject> buildsObjects) {
         List<Build> builds = new LinkedList<>();
-        for (Object obj: buildsObjects) {
-            JSONObject buildObject = (JSONObject) obj;
-            builds.add(getBuild(buildObject));
+        for (JSONObject obj: buildsObjects) {
+            builds.add(getBuild(obj));
         }
         return builds;
     }
@@ -220,20 +218,19 @@ public class JenkinsJsonParser implements JenkinsParser {
         return job;
     }
 
-    private List<JobParameter> getParameters(JSONArray parameterProperties) {
-        List<JobParameter> jobParameters = new LinkedList<JobParameter>();
+    private List<JobParameter> getParameters(List<JSONObject> parameterProperties) {
+        List<JobParameter> jobParameters = new LinkedList<>();
         if (parameterProperties == null || parameterProperties.isEmpty()) {
             return jobParameters;
         }
 
-        for (Object obj : parameterProperties) {
-            JSONObject parameterProperty = (JSONObject) obj;
-            if (parameterProperty == null || parameterProperty.isEmpty()) {
+        for (JSONObject obj : parameterProperties) {
+            if (obj == null || obj.isEmpty()) {
                 continue;
             }
 
 
-            JSONArray definitions = (JSONArray) parameterProperty.get(PARAMETER_DEFINITIONS);
+            JSONArray definitions = (JSONArray) obj.get(PARAMETER_DEFINITIONS);
             if (definitions == null) {
                 continue;
             }
@@ -262,7 +259,7 @@ public class JenkinsJsonParser implements JenkinsParser {
     }
 
     private List<String> getChoices(JSONArray choiceObjs) {
-        List<String> choices = new LinkedList<String>();
+        List<String> choices = new LinkedList<>();
         if (choiceObjs == null || choiceObjs.isEmpty()) {
             return choices;
         }
@@ -312,7 +309,7 @@ public class JenkinsJsonParser implements JenkinsParser {
         JSONParser parser = new JSONParser();
 
         try {
-            List<Job> jobs = new LinkedList<Job>();
+            List<Job> jobs = new LinkedList<>();
             JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
             JSONArray jobObjects = (JSONArray) jsonObject.get(JOBS);
             for (Object object : jobObjects) {
@@ -335,7 +332,7 @@ public class JenkinsJsonParser implements JenkinsParser {
         JSONParser parser = new JSONParser();
 
         try {
-            List<Job> jobs = new LinkedList<Job>();
+            List<Job> jobs = new LinkedList<>();
             JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
             JSONArray viewObjs = (JSONArray) jsonObject.get(VIEWS);
             if (viewObjs == null && viewObjs.isEmpty()) {

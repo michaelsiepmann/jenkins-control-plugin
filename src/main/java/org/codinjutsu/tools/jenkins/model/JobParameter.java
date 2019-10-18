@@ -18,13 +18,15 @@ package org.codinjutsu.tools.jenkins.model;
 
 import com.intellij.openapi.vfs.VirtualFile;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 public class JobParameter {
 
-    public static enum JobParameterType {
+    public enum JobParameterType {
         ChoiceParameterDefinition,
         BooleanParameterDefinition,
         StringParameterDefinition,
@@ -43,7 +45,7 @@ public class JobParameter {
 
     private VirtualFile virtualFile;
 
-    private final List<String> values = new LinkedList<String>();
+    private final List<String> values = new LinkedList<>();
 
     public JobParameter() {
     }
@@ -71,7 +73,7 @@ public class JobParameter {
         Collections.addAll(values, choices);
     }
 
-    public void setChoices(List<String> choices) {
+    public void setChoices(Collection<String> choices) {
         values.addAll(choices);
     }
 
@@ -114,11 +116,9 @@ public class JobParameter {
     }
 
     private static JobParameterType evaluate(String paramTypeToEvaluate) {
-        for (JobParameterType parameterType : JobParameterType.values()) {
-            if (parameterType.name().equals(paramTypeToEvaluate)) {
-                return parameterType;
-            }
-        }
-        return null;
+        return Arrays.stream(JobParameterType.values())
+                     .filter(parameterType -> parameterType.name().equals(paramTypeToEvaluate))
+                     .findFirst()
+                     .orElse(null);
     }
 }
