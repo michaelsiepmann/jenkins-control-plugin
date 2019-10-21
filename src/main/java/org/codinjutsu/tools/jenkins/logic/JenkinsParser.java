@@ -20,6 +20,7 @@ import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface JenkinsParser {
@@ -62,7 +63,7 @@ public interface JenkinsParser {
 
     Build createBuild(String jsonData);
 
-    List<Build> createBuilds(String jsonData);
+    Collection<Build> createBuilds(String jsonData);
 
     List<Job> createViewJobs(String jsonData);
 

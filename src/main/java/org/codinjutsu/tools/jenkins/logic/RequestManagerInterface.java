@@ -10,6 +10,7 @@ import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public interface RequestManagerInterface {
 
     Build loadBuild(Build build);
 
-    List<Build> loadBuilds(Job job);
+    Collection<Build> loadBuilds(Job job);
 
     String loadConsoleTextFor(Job job);
 

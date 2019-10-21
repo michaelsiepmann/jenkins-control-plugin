@@ -169,7 +169,7 @@ public class RequestManager implements RequestManagerInterface {
         return jsonParser.createBuild(jenkinsJobData);
     }
 
-    private List<Build> loadBuilds(String jenkinsBuildUrl) {
+    private Collection<Build> loadBuilds(String jenkinsBuildUrl) {
         if (handleNotYetLoggedInState()) return null;
         URL url = urlBuilder.createBuildsUrl(jenkinsBuildUrl);
         String jenkinsJobData = securityClient.execute(url);
@@ -254,7 +254,7 @@ public class RequestManager implements RequestManagerInterface {
     }
 
     @Override
-    public List<Build> loadBuilds(Job job) {
+    public Collection<Build> loadBuilds(Job job) {
         return loadBuilds(job.getUrl());
     }
 

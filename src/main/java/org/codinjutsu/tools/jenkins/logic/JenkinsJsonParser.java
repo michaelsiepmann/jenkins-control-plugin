@@ -20,9 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.codinjutsu.tools.jenkins.logic.json.ParsedBuild;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedBuilds;
-import org.codinjutsu.tools.jenkins.logic.json.ParsedJob;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedJobs;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedView;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedViews;
@@ -39,7 +37,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static java.util.Collections.emptyList;
@@ -107,8 +104,7 @@ public class JenkinsJsonParser implements JenkinsParser {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
         try {
-            ParsedJob job = createObjectMapper().readValue(jsonData, ParsedJob.class);
-            return getJob(job);
+            return createObjectMapper().readValue(jsonData, Job.class);
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
@@ -120,9 +116,7 @@ public class JenkinsJsonParser implements JenkinsParser {
     public Build createBuild(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
         try {
-            ParsedBuild build = createObjectMapper().readValue(jsonData, ParsedBuild.class);
-            return getBuild(build);
-
+            return createObjectMapper().readValue(jsonData, Build.class);
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
@@ -131,59 +125,16 @@ public class JenkinsJsonParser implements JenkinsParser {
     }
 
     @Override
-    public List<Build> createBuilds(String jsonData) {
+    public Collection<Build> createBuilds(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
         try {
             ParsedBuilds builds = createObjectMapper().readValue(jsonData, ParsedBuilds.class);
-            return getBuilds(builds.getBuilds());
+            return builds.getBuilds();
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
         }
-    }
-
-    @Nullable
-    private Build getBuild(ParsedBuild lastBuildObject) {
-        if (lastBuildObject == null) {
-            return null;
-        }
-
-        Build build = new Build();
-        build.setBuildDate(lastBuildObject.getId());
-        build.setBuilding(lastBuildObject.getBuilding());
-        build.setNumber(lastBuildObject.getNumber());
-        build.setStatus(lastBuildObject.getStatus());
-        build.setUrl(lastBuildObject.getUrl());
-        Long timestamp = lastBuildObject.getTimestamp();
-        if (null != timestamp) {
-            build.setTimestamp(timestamp);
-        }
-        Long duration = lastBuildObject.getDuration();
-        if (null != duration) {
-            build.setDuration(duration);
-        }
-
-        return build;
-    }
-
-    private List<Build> getBuilds(Collection<ParsedBuild> buildsObjects) {
-        return buildsObjects.stream().map(this::getBuild).collect(Collectors.toCollection(LinkedList::new));
-    }
-
-    private Job getJob(ParsedJob parsedJob) {
-        Job job = new Job();
-        job.setName(parsedJob.getName());
-        job.setDisplayName(parsedJob.getDisplayName());
-        job.setFullDisplayName(parsedJob.getFullDisplayName());
-        job.setUrl(parsedJob.getUrl());
-        job.setColor(parsedJob.getColor());
-        job.setHealth(getHealth(parsedJob.getHealths()));
-        job.setBuildable(parsedJob.getBuildable());
-        job.setInQueue(parsedJob.getInQueue());
-        job.setLastBuild(getBuild(parsedJob.getLastBuild()));
-        job.addParameters(parsedJob.getParameters());
-        return job;
     }
 
     @Contract("null -> null")
@@ -205,7 +156,7 @@ public class JenkinsJsonParser implements JenkinsParser {
 
         try {
             ParsedJobs parsedJobs = createObjectMapper().readValue(jsonData, ParsedJobs.class);
-            return parsedJobs.getJobs().stream().map(this::getJob).collect(Collectors.toCollection(LinkedList::new));
+            return new LinkedList<>(parsedJobs.getJobs());
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
@@ -225,11 +176,11 @@ public class JenkinsJsonParser implements JenkinsParser {
             }
 
             ParsedView view = (ParsedView) CollectionUtils.get(viewObjs, 0);
-            Collection<ParsedJob> jobs = view.getJobs();
+            Collection<Job> jobs = view.getJobs();
             if (jobs == null) {
                 return emptyList();
             }
-            return jobs.stream().map(this::getJob).collect(Collectors.toCollection(LinkedList::new));
+            return new LinkedList<>(jobs);
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);

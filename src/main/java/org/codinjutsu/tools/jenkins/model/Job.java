@@ -16,16 +16,32 @@
 
 package org.codinjutsu.tools.jenkins.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.collections.CollectionUtils;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Icon;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_COLOR;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_DISPLAY_NAME;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_FULLDISPLAY_NAME;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_HEALTH;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_IS_BUILDABLE;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_IS_IN_QUEUE;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_LAST_BUILD;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_NAME;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_URL;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.PARAMETER_PROPERTY;
 
 public class Job {
 
@@ -45,7 +61,7 @@ public class Job {
 
     private Build lastBuild;
 
-    private List<Build> lastBuilds = new LinkedList<>();
+    private Collection<Build> lastBuilds = new LinkedList<>();
 
     private final List<JobParameterDefinition> parameters = new LinkedList<>();
 
@@ -58,8 +74,64 @@ public class Job {
         ICON_BY_JOB_HEALTH_MAP.put("null", GuiUtil.loadIcon("null.png"));
     }
 
+    @Contract("null -> null")
+    @Nullable
+    private static Health getHealth(Collection<Health> healths) {
+        if (healths == null || healths.isEmpty()) {
+            return null;
+        }
+        Health health = (Health) CollectionUtils.get(healths, 0);
+        if (isNotEmpty(health.getLevel())) {
+            return health;
+        }
+        return null;
+    }
+
+    private static Collection<JobParameterDefinition> getParameterDefinitions(Collection<JobParameter> parameters) {
+        if (parameters == null) {
+            return Collections.emptyList();
+        }
+        Collection<JobParameterDefinition> result = new LinkedList<>();
+        for (JobParameter parameter : parameters) {
+            Collection<JobParameterDefinition> definitions = parameter.getDefinitions();
+            if (definitions != null) {
+                result.addAll(definitions);
+            }
+        }
+        return result;
+    }
 
     public Job() {
+    }
+
+    @JsonCreator
+    public Job(
+            @JsonProperty(JOB_NAME)
+                    String name,
+            @JsonProperty(JOB_DISPLAY_NAME)
+                    String displayName,
+            @JsonProperty(JOB_FULLDISPLAY_NAME)
+                    String fullDisplayName,
+            @JsonProperty(JOB_URL)
+                    String url,
+            @JsonProperty(JOB_COLOR)
+                    String color,
+            @JsonProperty(JOB_IS_BUILDABLE)
+                    Boolean buildable,
+            @JsonProperty(JOB_IS_IN_QUEUE)
+                    Boolean inQueue,
+            @JsonProperty(JOB_LAST_BUILD)
+                    Build lastBuild,
+            @JsonProperty(JOB_HEALTH)
+                    Collection<Health> healths,
+            @JsonProperty(PARAMETER_PROPERTY)
+                    Collection<JobParameter> parameters
+    ) {
+        this(name, displayName, color, url, inQueue, buildable);
+        this.fullDisplayName = fullDisplayName;
+        this.lastBuild = lastBuild;
+        this.health = getHealth(healths);
+        this.parameters.addAll(getParameterDefinitions(parameters));
     }
 
     private Job(String name, String displayName, String color, String url, Boolean inQueue, Boolean buildable) {
@@ -127,10 +199,6 @@ public class Job {
         this.displayName = displayName;
     }
 
-    public void setFullDisplayName(String fullDisplayName) {
-        this.fullDisplayName = fullDisplayName;
-    }
-
     public String getColor() {
         return color;
     }
@@ -171,11 +239,11 @@ public class Job {
         this.lastBuild = lastBuild;
     }
 
-    public List<Build> getLastBuilds() {
+    public Collection<Build> getLastBuilds() {
         return lastBuilds;
     }
 
-    public void setLastBuilds(List<Build> builds) {
+    public void setLastBuilds(Collection<Build> builds) {
         lastBuilds = builds;
     }
 
@@ -213,20 +281,6 @@ public class Job {
             }
         }
         return false;
-    }
-
-    public void setParameter(JobParameterDefinition jobParameter) {
-        if (parameters.size() > 0) {
-            for (JobParameterDefinition parameter : parameters) {
-                if (parameter.getName().equals(jobParameter.getName())) {
-                    parameters.set(parameters.indexOf(parameter), jobParameter);
-                }
-            }
-        }
-    }
-
-    public void addParameters(Collection<JobParameterDefinition> jobParameters) {
-        parameters.addAll(jobParameters);
     }
 
     @Override

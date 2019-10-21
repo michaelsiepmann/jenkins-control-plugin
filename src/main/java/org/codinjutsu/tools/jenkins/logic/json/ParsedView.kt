@@ -5,6 +5,7 @@ import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOBS
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.VIEWS
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.VIEW_NAME
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.VIEW_URL
+import org.codinjutsu.tools.jenkins.model.Job
 
 internal data class ParsedView(
         @JsonProperty(VIEW_NAME)
@@ -14,5 +15,5 @@ internal data class ParsedView(
         @JsonProperty(VIEWS)
         val subViews: Collection<ParsedView>?,
         @JsonProperty(JOBS)
-        val jobs: Collection<ParsedJob>?
+        val jobs: Collection<Job>?
 )
