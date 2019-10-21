@@ -18,7 +18,7 @@ package org.codinjutsu.tools.jenkins.view.validator;
 
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 
 public interface UIValidator<T extends JComponent> {
     void validate(T component) throws ConfigurationException;

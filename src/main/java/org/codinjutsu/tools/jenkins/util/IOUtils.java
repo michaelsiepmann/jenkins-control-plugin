@@ -1,6 +1,11 @@
 package org.codinjutsu.tools.jenkins.util;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 
 /**
  * Extracted from commons-io (because of bloated size in compare to whole plugin)

@@ -1,10 +1,9 @@
-package org.codinjutsu.tools.jenkins.logic.json
+package org.codinjutsu.tools.jenkins.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOBS
-import org.codinjutsu.tools.jenkins.model.Job
 
-internal data class ParsedJobs(
+internal data class Jobs(
         @JsonProperty(JOBS)
         val jobs: Collection<Job>
 )

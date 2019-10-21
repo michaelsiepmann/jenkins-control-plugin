@@ -35,7 +35,7 @@ public interface RequestManagerInterface {
 
     Job loadJob(Job job);
 
-    List<Job>loadJenkinsView (View view);
+    Collection<Job> loadJenkinsView(View view);
 
     Build loadBuild(Build build);
 

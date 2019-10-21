@@ -77,7 +77,7 @@ public class SelectJobDialog extends JDialog {
 
     private ChangeList[] changeLists;
 
-    public SelectJobDialog(ChangeList[] changeLists, List<Job> jobs, Project project) {
+    public SelectJobDialog(ChangeList[] changeLists, Collection<Job> jobs, Project project) {
 
         this.project = project;
 

@@ -35,11 +35,18 @@ import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
 import org.codinjutsu.tools.jenkins.security.SecurityClient;
 import org.codinjutsu.tools.jenkins.security.SecurityClientFactory;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 public class RequestManager implements RequestManagerInterface {
 
@@ -121,15 +128,16 @@ public class RequestManager implements RequestManagerInterface {
         return rssParser.loadJenkinsRssLatestBuilds(rssData);
     }
 
-    private List<Job> loadJenkinsView(String viewUrl) {
-        if (handleNotYetLoggedInState()) return Collections.emptyList();
+    private Collection<Job> loadJenkinsView(String viewUrl) {
+        if (handleNotYetLoggedInState()) {
+            return emptyList();
+        }
         URL url = urlBuilder.createViewUrl(jenkinsPlateform, viewUrl);
         String jenkinsViewData = securityClient.execute(url);
         if (jenkinsPlateform.equals(JenkinsPlateform.CLASSIC)) {
             return jsonParser.createViewJobs(jenkinsViewData);
-        } else {
-            return jsonParser.createCloudbeesViewJobs(jenkinsViewData);
         }
+        return jsonParser.createCloudbeesViewJobs(jenkinsViewData);
     }
 
     private boolean handleNotYetLoggedInState() {
@@ -150,27 +158,35 @@ public class RequestManager implements RequestManagerInterface {
     }
 
     private Job loadJob(String jenkinsJobUrl) {
-        if (handleNotYetLoggedInState()) return null;
+        if (handleNotYetLoggedInState()) {
+            return null;
+        }
         URL url = urlBuilder.createJobUrl(jenkinsJobUrl);
         String jenkinsJobData = securityClient.execute(url);
         return jsonParser.createJob(jenkinsJobData);
     }
 
     private void stopBuild(String jenkinsBuildUrl) {
-        if (handleNotYetLoggedInState()) return;
+        if (handleNotYetLoggedInState()) {
+            return;
+        }
         URL url = urlBuilder.createStopBuildUrl(jenkinsBuildUrl);
         securityClient.execute(url);
     }
 
     private Build loadBuild(String jenkinsBuildUrl) {
-        if (handleNotYetLoggedInState()) return null;
+        if (handleNotYetLoggedInState()) {
+            return null;
+        }
         URL url = urlBuilder.createBuildUrl(jenkinsBuildUrl);
         String jenkinsJobData = securityClient.execute(url);
         return jsonParser.createBuild(jenkinsJobData);
     }
 
     private Collection<Build> loadBuilds(String jenkinsBuildUrl) {
-        if (handleNotYetLoggedInState()) return null;
+        if (handleNotYetLoggedInState()) {
+            return null;
+        }
         URL url = urlBuilder.createBuildsUrl(jenkinsBuildUrl);
         String jenkinsJobData = securityClient.execute(url);
         return jsonParser.createBuilds(jenkinsJobData);
@@ -178,7 +194,9 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public void runBuild(Job job, JenkinsAppSettings configuration, Map<String, VirtualFile> files) {
-        if (handleNotYetLoggedInState()) return;
+        if (handleNotYetLoggedInState()) {
+            return;
+        }
         if (job.hasParameters()) {
             if (files.size() > 0) {
                 for (String key : files.keySet()) {
@@ -194,14 +212,18 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public void runBuild(Job job, JenkinsAppSettings configuration) {
-        if (handleNotYetLoggedInState()) return;
+        if (handleNotYetLoggedInState()) {
+            return;
+        }
         URL url = urlBuilder.createRunJobUrl(job.getUrl(), configuration);
         securityClient.execute(url);
     }
 
     @Override
     public void runParameterizedBuild(Job job, JenkinsAppSettings configuration, Map<String, String> paramValueMap) {
-        if (handleNotYetLoggedInState()) return;
+        if (handleNotYetLoggedInState()) {
+            return;
+        }
         URL url = urlBuilder.createRunParameterizedJobUrl(job.getUrl(), configuration, paramValueMap);
         securityClient.execute(url);
     }
@@ -230,7 +252,9 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public List<Job> loadFavoriteJobs(List<JenkinsSettings.FavoriteJob> favoriteJobs) {
-        if (handleNotYetLoggedInState()) return Collections.emptyList();
+        if (handleNotYetLoggedInState()) {
+            return emptyList();
+        }
         List<Job> jobs = new LinkedList<>();
         for (JenkinsSettings.FavoriteJob favoriteJob : favoriteJobs) {
             jobs.add(loadJob(favoriteJob.url));
@@ -249,7 +273,7 @@ public class RequestManager implements RequestManagerInterface {
     }
 
     @Override
-    public List<Job> loadJenkinsView(View view) {
+    public Collection<Job> loadJenkinsView(View view) {
         return loadJenkinsView(view.getUrl());
     }
 
@@ -289,7 +313,7 @@ public class RequestManager implements RequestManagerInterface {
             return result;
         } catch (IOException e) {
             logger.warn("cannot load test results for " + job.getName());
-            return Collections.emptyList();
+            return emptyList();
         }
     }
 }

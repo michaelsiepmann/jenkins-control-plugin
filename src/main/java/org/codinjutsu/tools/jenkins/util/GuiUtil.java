@@ -24,7 +24,9 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.IconLoader;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 import java.net.URL;
 
 public class GuiUtil {

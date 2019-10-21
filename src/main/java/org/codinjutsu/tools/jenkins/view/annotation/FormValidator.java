@@ -21,7 +21,7 @@ import org.codinjutsu.tools.jenkins.view.ConfigurationPanel;
 import org.codinjutsu.tools.jenkins.view.validator.UIValidator;
 import org.codinjutsu.tools.jenkins.view.validator.ValidatorTypeEnum;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;

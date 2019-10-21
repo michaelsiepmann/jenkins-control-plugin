@@ -1,10 +1,9 @@
 package org.codinjutsu.tools.jenkins.jobtracker
 
+import com.google.common.base.Objects
 import org.codinjutsu.tools.jenkins.model.Build
 import org.codinjutsu.tools.jenkins.model.BuildStatusEnum
 import org.codinjutsu.tools.jenkins.model.Job
-
-import com.google.common.base.Objects
 
 class TraceableBuildJob internal constructor(private val job: Job, numTries: Int, private val runBuild: () -> Unit) {
     private var numBuildTriesLeft: Int = numTries - 1

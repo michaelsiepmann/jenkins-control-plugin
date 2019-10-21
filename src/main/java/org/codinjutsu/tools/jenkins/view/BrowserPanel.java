@@ -32,7 +32,6 @@ import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.ui.treeStructure.Tree;
-import com.intellij.util.containers.Convertor;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -77,8 +76,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +121,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         Job job1 = ((Job) treeNode1.getUserObject());
         Job job2 = ((Job) treeNode2.getUserObject());
 
-        return new Integer(BuildStatusEnum.getStatus(job1.getColor()).ordinal()).compareTo(BuildStatusEnum.getStatus(job2.getColor()).ordinal());
+        return Integer.compare(BuildStatusEnum.getStatus(job1.getColor()).ordinal(), BuildStatusEnum.getStatus(job2.getColor()).ordinal());
     };
     private static final Comparator<DefaultMutableTreeNode> sortByNameComparator = (treeNode1, treeNode2) -> {
         Job job1 = ((Job) treeNode1.getUserObject());
@@ -197,12 +196,12 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         return TreeUtil.collectSelectedObjectsOfType(jobTree, Job.class);
     }
 
-    public List<Job> getJobs() {
+    public Collection<Job> getJobs() {
         return jenkins.getJobs();
     }
 
     public Job getJob(String name) {
-        List<Job> jobs = jenkins.getJobs();
+        Collection<Job> jobs = jenkins.getJobs();
         if (jobs.size() > 0) {
             for (Job job : jobs) {
                 if (job.getName().equals(name)) {
@@ -468,7 +467,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         if (SwingUtilities.isEventDispatchThread()) {
             logger.warn("BrowserPanel.loadJobs called from EDT");
         }
-        final List<Job> jobList;
+        final Collection<Job> jobList;
         if (currentSelectedView instanceof FavoriteView) {
             jobList = requestManager.loadFavoriteJobs(jenkinsSettings.getFavoriteJobs());
         } else {
@@ -485,12 +484,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
             return currentSelectedView;
         }
 
-        View primaryView = jenkins.getPrimaryView();
-        if (primaryView != null) {
-            return primaryView;
-        }
-
-        return null;
+        return jenkins.getPrimaryView();
     }
 
     private void fillBuildsTree(Job job, DefaultMutableTreeNode jobNode) {
@@ -502,7 +496,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     private void fillJobTree(final BuildStatusVisitor buildStatusVisitor) {
-        final List<Job> jobList = jenkins.getJobs();
+        final Collection<Job> jobList = jenkins.getJobs();
         if (jobList.isEmpty()) {
             return;
         }

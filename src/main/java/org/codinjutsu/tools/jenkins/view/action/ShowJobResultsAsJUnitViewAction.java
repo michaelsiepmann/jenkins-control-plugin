@@ -9,7 +9,7 @@ import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.codinjutsu.tools.jenkins.view.action.results.JobTestResultsToolWindow;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 public class ShowJobResultsAsJUnitViewAction extends AnAction {
     private static final Icon ICON = AllIcons.Actions.GroupByTestProduction;

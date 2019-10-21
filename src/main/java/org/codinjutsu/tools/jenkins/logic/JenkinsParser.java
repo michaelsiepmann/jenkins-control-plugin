@@ -21,7 +21,6 @@ import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface JenkinsParser {
     String JOBS = "jobs";
@@ -65,7 +64,7 @@ public interface JenkinsParser {
 
     Collection<Build> createBuilds(String jsonData);
 
-    List<Job> createViewJobs(String jsonData);
+    Collection<Job> createViewJobs(String jsonData);
 
-    List<Job> createCloudbeesViewJobs(String jsonData);
+    Collection<Job> createCloudbeesViewJobs(String jsonData);
 }

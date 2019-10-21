@@ -24,8 +24,8 @@ import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Icon;
+import javax.swing.JList;
 
 public class JenkinsNestedViewComboRenderer extends ColoredListCellRenderer<View> {
 

@@ -19,7 +19,7 @@ package org.codinjutsu.tools.jenkins.view.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 
-import javax.swing.*;
+import javax.swing.JTextField;
 
 public class StrictPositiveIntegerValidator implements UIValidator<JTextField> {
     public void validate(JTextField component) throws ConfigurationException {
