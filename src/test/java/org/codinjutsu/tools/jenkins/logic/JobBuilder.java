@@ -17,6 +17,7 @@
 package org.codinjutsu.tools.jenkins.logic;
 
 import org.codinjutsu.tools.jenkins.model.Build;
+import org.codinjutsu.tools.jenkins.model.Health;
 import org.codinjutsu.tools.jenkins.model.Job;
 
 public class JobBuilder {
@@ -38,7 +39,7 @@ public class JobBuilder {
     }
 
     public JobBuilder health(String healthLevel, String healthDescription) {
-        job.setHealth(Job.Health.createHealth(healthLevel, healthDescription));
+        job.setHealth(Health.createHealth(healthLevel, healthDescription));
         return this;
     }
 

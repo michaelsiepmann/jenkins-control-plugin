@@ -8,7 +8,7 @@ import org.codinjutsu.tools.jenkins.logic.JenkinsParser.VIEW_URL
 
 internal data class ParsedView(
         @JsonProperty(VIEW_NAME)
-        val name: String,
+        val name: String?,
         @JsonProperty(VIEW_URL)
         val url: String,
         @JsonProperty(VIEWS)

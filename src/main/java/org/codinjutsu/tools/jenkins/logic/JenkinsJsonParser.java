@@ -22,19 +22,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedBuild;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedBuilds;
-import org.codinjutsu.tools.jenkins.logic.json.ParsedHealth;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedJob;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedJobs;
-import org.codinjutsu.tools.jenkins.logic.json.ParsedParameter;
-import org.codinjutsu.tools.jenkins.logic.json.ParsedParameterDefinition;
-import org.codinjutsu.tools.jenkins.logic.json.ParsedParameterDefinitionDefault;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedView;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedViews;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedWorkspace;
 import org.codinjutsu.tools.jenkins.model.Build;
+import org.codinjutsu.tools.jenkins.model.Health;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
-import org.codinjutsu.tools.jenkins.model.JobParameter;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -185,79 +181,20 @@ public class JenkinsJsonParser implements JenkinsParser {
         job.setHealth(getHealth(parsedJob.getHealths()));
         job.setBuildable(parsedJob.getBuildable());
         job.setInQueue(parsedJob.getInQueue());
-        job.setLastBuild(getLastBuild(parsedJob.getLastBuild()));
-        job.addParameters(getParameters(parsedJob.getParameters()));
+        job.setLastBuild(getBuild(parsedJob.getLastBuild()));
+        job.addParameters(parsedJob.getParameters());
         return job;
-    }
-
-    private List<JobParameter> getParameters(Collection<ParsedParameter> parameterProperties) {
-        List<JobParameter> jobParameters = new LinkedList<>();
-        if (parameterProperties == null || parameterProperties.isEmpty()) {
-            return emptyList();
-        }
-
-        for (ParsedParameter obj : parameterProperties) {
-            Collection<ParsedParameterDefinition> definitions = obj.getDefinitions();
-            if (definitions == null) {
-                continue;
-            }
-            for (ParsedParameterDefinition defObj : definitions) {
-                JobParameter jobParameter = new JobParameter();
-                ParsedParameterDefinitionDefault defaultParamObj = defObj.getDefaultValue();
-                if (defaultParamObj != null) {
-                    String defaultValue = defaultParamObj.getValue();
-                    if (defaultValue != null) {
-                        jobParameter.setDefaultValue(defaultValue);
-                    }
-                }
-
-                jobParameter.setName(defObj.getName());
-                String description = defObj.getDescription();
-                if (isNotEmpty(description)) {
-                    jobParameter.setDescription(description);
-                }
-                jobParameter.setType(defObj.getType());
-                jobParameter.setChoices(getChoices(defObj.getChoices()));
-                jobParameters.add(jobParameter);
-            }
-        }
-        return jobParameters;
-    }
-
-    private List<String> getChoices(Collection<String> paramChoices) {
-        if (paramChoices == null || paramChoices.isEmpty()) {
-            return emptyList();
-        }
-        return new LinkedList<>(paramChoices);
-    }
-
-    private Build getLastBuild(ParsedBuild lastBuildObject) {
-        return getBuild(lastBuildObject);
     }
 
     @Contract("null -> null")
     @Nullable
-    private Job.Health getHealth(Collection<ParsedHealth> healths) {
+    private Health getHealth(Collection<Health> healths) {
         if (healths == null || healths.isEmpty()) {
             return null;
         }
-
-        Job.Health health = new Job.Health();
-        ParsedHealth h = (ParsedHealth) CollectionUtils.get(healths, 0);
-        health.setDescription(h.getDescription());
-        health.setLevel(getHealthLevel(h));
+        Health health = (Health) CollectionUtils.get(healths, 0);
         if (isNotEmpty(health.getLevel())) {
             return health;
-        }
-        return null;
-    }
-
-    @Nullable
-    private String getHealthLevel(ParsedHealth health) {
-        String healthLevel = health.getIcon();
-        if (isNotEmpty(healthLevel)) {
-            String suffix = healthLevel.endsWith(".png") ? ".png" : ".gif";
-            return healthLevel.substring(0, healthLevel.lastIndexOf(suffix));
         }
         return null;
     }

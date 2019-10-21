@@ -26,7 +26,7 @@ import org.codinjutsu.tools.jenkins.jobtracker.TraceableBuildJob;
 import org.codinjutsu.tools.jenkins.jobtracker.TraceableBuildJobFactory;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
-import org.codinjutsu.tools.jenkins.model.JobParameter;
+import org.codinjutsu.tools.jenkins.model.JobParameterDefinition;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.util.SpringUtilities;
 
@@ -69,7 +69,7 @@ public class BuildParamDialog extends JDialog {
     private final JenkinsAppSettings configuration;
     private final RequestManager requestManager;
     private final RunBuildCallback runBuildCallback;
-    private final Map<JobParameter, JComponent> inputFieldByParameterMap = new HashMap<>();
+    private final Map<JobParameterDefinition, JComponent> inputFieldByParameterMap = new HashMap<>();
 
 // UNSUPPORTED PARAMETERS
 //        FileParameterDefinition
@@ -107,10 +107,10 @@ public class BuildParamDialog extends JDialog {
 
     private void addParameterInputs() {
         contentPanel.setLayout(new SpringLayout());
-        List<JobParameter> parameters = job.getParameters();
+        List<JobParameterDefinition> parameters = job.getParameters();
 
         int rows = parameters.size();
-        for (JobParameter jobParameter : parameters) {
+        for (JobParameterDefinition jobParameter : parameters) {
             JComponent inputField = createInputField(jobParameter);
 
             String name = jobParameter.getName();
@@ -169,24 +169,26 @@ public class BuildParamDialog extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private JComponent createInputField(JobParameter jobParameter) {//TODO add wrapper
+    private JComponent createInputField(JobParameterDefinition jobParameter) {//TODO add wrapper
         String defaultValue = jobParameter.getDefaultValue();
-        switch (jobParameter.getJobParameterType()) {
-            case ChoiceParameterDefinition:
-                return createComboBox(jobParameter, defaultValue);
-            case BooleanParameterDefinition:
-                return createCheckBox(defaultValue);
-            case StringParameterDefinition:
-                return createTextField(defaultValue);
-            case PasswordParameterDefinition:
-                return createPasswordField(defaultValue);
-            default:
-                hasError = true;
-                return createErrorLabel(jobParameter.getJobParameterType());
+        JobParameterDefinition.JobParameterType jobParameterType = jobParameter.getJobParameterType();
+        if (jobParameterType != null) {
+            switch (jobParameterType) {
+                case ChoiceParameterDefinition:
+                    return createComboBox(jobParameter, defaultValue);
+                case BooleanParameterDefinition:
+                    return createCheckBox(defaultValue);
+                case StringParameterDefinition:
+                    return createTextField(defaultValue);
+                case PasswordParameterDefinition:
+                    return createPasswordField(defaultValue);
+            }
         }
+        hasError = true;
+        return createErrorLabel(jobParameterType);
     }
 
-    private JLabel createErrorLabel(JobParameter.JobParameterType jobParameterType) {
+    private JLabel createErrorLabel(JobParameterDefinition.JobParameterType jobParameterType) {
         String text;
         if (jobParameterType != null) {
             text = jobParameterType.name() + " is unsupported.";
@@ -255,7 +257,7 @@ public class BuildParamDialog extends JDialog {
         return checkBox;
     }
 
-    private JComboBox createComboBox(JobParameter jobParameter, String defaultValue) {
+    private JComboBox createComboBox(JobParameterDefinition jobParameter, String defaultValue) {
         ComboBox comboBox = new ComboBox<>(jobParameter.getValues().toArray());
         if (StringUtils.isNotEmpty(defaultValue)) {
             comboBox.setSelectedItem(defaultValue);
@@ -265,10 +267,10 @@ public class BuildParamDialog extends JDialog {
 
     private Map<String, String> getParamValueMap() {//TODO transformer en visiteur
         Map<String, String> valueByNameMap = new HashMap<>();
-        for (Map.Entry<JobParameter, JComponent> inputFieldByParameter : inputFieldByParameterMap.entrySet()) {
-            JobParameter jobParameter = inputFieldByParameter.getKey();
+        for (Map.Entry<JobParameterDefinition, JComponent> inputFieldByParameter : inputFieldByParameterMap.entrySet()) {
+            JobParameterDefinition jobParameter = inputFieldByParameter.getKey();
             String name = jobParameter.getName();
-            JobParameter.JobParameterType jobParameterType = jobParameter.getJobParameterType();
+            JobParameterDefinition.JobParameterType jobParameterType = jobParameter.getJobParameterType();
 
             JComponent inputField = inputFieldByParameter.getValue();
 

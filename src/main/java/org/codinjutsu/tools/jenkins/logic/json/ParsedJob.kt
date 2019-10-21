@@ -11,6 +11,9 @@ import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_LAST_BUILD
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_NAME
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_URL
 import org.codinjutsu.tools.jenkins.logic.JenkinsParser.PARAMETER_PROPERTY
+import org.codinjutsu.tools.jenkins.model.Health
+import org.codinjutsu.tools.jenkins.model.JobParameterDefinition
+import org.codinjutsu.tools.jenkins.model.JobParameter
 
 internal data class ParsedJob(
         @JsonProperty(JOB_NAME)
@@ -18,9 +21,9 @@ internal data class ParsedJob(
         @JsonProperty(JOB_DISPLAY_NAME)
         val displayName: String,
         @JsonProperty(JOB_FULLDISPLAY_NAME)
-        val fullDisplayName: String,
+        val fullDisplayName: String?,
         @JsonProperty(JOB_URL)
-        val url: String,
+        val url: String?,
         @JsonProperty(JOB_COLOR)
         val color: String,
         @JsonProperty(JOB_IS_BUILDABLE)
@@ -30,7 +33,14 @@ internal data class ParsedJob(
         @JsonProperty(JOB_LAST_BUILD)
         val lastBuild: ParsedBuild?,
         @JsonProperty(JOB_HEALTH)
-        val healths: Collection<ParsedHealth>?,
+        val healths: Collection<Health>?,
         @JsonProperty(PARAMETER_PROPERTY)
-        val parameters: Collection<ParsedParameter>?
-)
+        private val parameters: Collection<JobParameter>?
+) {
+    fun getParameters(): Collection<JobParameterDefinition> {
+        if (parameters == null) {
+            return emptyList()
+        }
+        return parameters.mapNotNull { it.definitions }.flatten()
+    }
+}

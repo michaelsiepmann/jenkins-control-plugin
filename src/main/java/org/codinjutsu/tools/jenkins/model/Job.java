@@ -47,7 +47,7 @@ public class Job {
 
     private List<Build> lastBuilds = new LinkedList<>();
 
-    private final List<JobParameter> parameters = new LinkedList<>();
+    private final List<JobParameterDefinition> parameters = new LinkedList<>();
 
     static {
         ICON_BY_JOB_HEALTH_MAP.put("health-00to19", GuiUtil.loadIcon("health-00to19.png"));
@@ -106,7 +106,7 @@ public class Job {
 
 
     public void addParameter(String paramName, String paramType, String defaultValue, String... choices) {
-        parameters.add(JobParameter.create(paramName, paramType, defaultValue, choices));
+        parameters.add(JobParameterDefinition.create(paramName, paramType, defaultValue, choices));
     }
 
     public void setName(String name) {
@@ -200,13 +200,13 @@ public class Job {
     }
 
 
-    public List<JobParameter> getParameters() {
+    public List<JobParameterDefinition> getParameters() {
         return parameters;
     }
 
     public boolean hasParameter(String name) {
         if (hasParameters()) {
-            for (JobParameter parameter : parameters) {
+            for (JobParameterDefinition parameter : parameters) {
                 if (parameter.getName().equals(name)) {
                     return true;
                 }
@@ -215,9 +215,9 @@ public class Job {
         return false;
     }
 
-    public void setParameter(JobParameter jobParameter) {
+    public void setParameter(JobParameterDefinition jobParameter) {
         if (parameters.size() > 0) {
-            for (JobParameter parameter : parameters) {
+            for (JobParameterDefinition parameter : parameters) {
                 if (parameter.getName().equals(jobParameter.getName())) {
                     parameters.set(parameters.indexOf(parameter), jobParameter);
                 }
@@ -225,42 +225,8 @@ public class Job {
         }
     }
 
-    public void addParameters(Collection<JobParameter> jobParameters) {
+    public void addParameters(Collection<JobParameterDefinition> jobParameters) {
         parameters.addAll(jobParameters);
-    }
-
-    public static class Health {
-
-        private String healthLevel;
-        private String description;
-
-        public Health() {
-        }
-
-        private Health(String healthLevel, String description) {
-            this.healthLevel = healthLevel;
-            this.description = description;
-        }
-
-        public String getLevel() {
-            return healthLevel;
-        }
-
-        public void setLevel(String healthLevel) {
-            this.healthLevel = healthLevel;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public static Health createHealth(String healthLevel, String healthDescription) {
-            return new Health(healthLevel, healthDescription);
-        }
     }
 
     @Override
