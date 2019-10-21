@@ -16,15 +16,16 @@
 
 package org.codinjutsu.tools.jenkins.model;
 
-import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 
-import javax.swing.*;
+import javax.swing.Icon;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class Job {
 
@@ -32,6 +33,7 @@ public class Job {
     private String name;
 
     private String displayName;
+    private String fullDisplayName;
     private String url;
 
     private String color;
@@ -70,7 +72,7 @@ public class Job {
     }
 
 
-    public static Job createJob(String jobName, String displayName,  String jobColor, String jobUrl, String inQueue, String buildable) {
+    public static Job createJob(String jobName, String displayName, String jobColor, String jobUrl, String inQueue, String buildable) {
         return new Job(jobName, displayName, jobColor, jobUrl, Boolean.valueOf(inQueue), Boolean.valueOf(buildable));
     }
 
@@ -112,14 +114,21 @@ public class Job {
     }
 
     public String getName() {
-        if (StringUtils.isEmpty(displayName)) {
-            return name;
+        if (isNotEmpty(fullDisplayName)) {
+            return fullDisplayName;
         }
-        return displayName;
+        if (isNotEmpty(displayName)) {
+            return displayName;
+        }
+        return name;
     }
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public void setFullDisplayName(String fullDisplayName) {
+        this.fullDisplayName = fullDisplayName;
     }
 
     public String getColor() {
@@ -197,7 +206,7 @@ public class Job {
 
     public boolean hasParameter(String name) {
         if (hasParameters()) {
-            for(JobParameter parameter: parameters) {
+            for (JobParameter parameter : parameters) {
                 if (parameter.getName().equals(name)) {
                     return true;
                 }
@@ -208,7 +217,7 @@ public class Job {
 
     public void setParameter(JobParameter jobParameter) {
         if (parameters.size() > 0) {
-            for(JobParameter parameter: parameters) {
+            for (JobParameter parameter : parameters) {
                 if (parameter.getName().equals(jobParameter.getName())) {
                     parameters.set(parameters.indexOf(parameter), jobParameter);
                 }

@@ -101,7 +101,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.project.DumbAwareAction;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.ui.awt.RelativePoint;
@@ -114,8 +113,16 @@ import org.codinjutsu.tools.jenkins.view.JenkinsNestedViewComboRenderer;
 import org.codinjutsu.tools.jenkins.view.JenkinsViewComboRenderer;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
@@ -129,8 +136,8 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
 
     private static final Icon ARROWS_ICON = GuiUtil.loadIcon("/ide/", "statusbar_arrows.png");
 
-    protected final JLabel myLabel;
-    protected final JPanel myPanel;
+    private final JLabel myLabel;
+    private final JPanel myPanel;
     private final BrowserPanel browserPanel;
 
     public SelectViewAction(final BrowserPanel browserPanel) {
@@ -151,26 +158,27 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
         myPanel.addMouseListener(new MyMouseAdapter());
     }
 
-    private JBList buildViewList(List<View> views, BrowserPanel browserPanel) {
-        List<View> unflattenViews = flatViewList(views);
+    private JBList buildViewList(Collection<View> views) {
+        Collection<View> unflattenViews = flatViewList(views);
 
         if (browserPanel.hasFavoriteJobs()) {
             unflattenViews.add(FavoriteView.create());
         }
 
         final JBList<View> viewList = new JBList<>(unflattenViews);
-
-        if (hasNestedViews(unflattenViews)) {
-            viewList.setCellRenderer(new JenkinsNestedViewComboRenderer());
-        } else {
-            viewList.setCellRenderer(new JenkinsViewComboRenderer());
-        }
+        viewList.setCellRenderer(createCellRenderer(unflattenViews));
         return viewList;
     }
 
+    private ListCellRenderer<View> createCellRenderer(Collection<View> unflattenViews) {
+        if (hasNestedViews(unflattenViews)) {
+            return new JenkinsNestedViewComboRenderer();
+        }
+        return new JenkinsViewComboRenderer();
+    }
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
         View currentSelectedView = browserPanel.getCurrentSelectedView();
         if (currentSelectedView != null) {
             myLabel.setText(currentSelectedView.getName());
@@ -190,7 +198,7 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
     }
 
     @NotNull
-    private static List<View> flatViewList(@NotNull Iterable<View> views) {
+    private Collection<View> flatViewList(@NotNull Iterable<View> views) {
         List<View> flattenViewList = new LinkedList<>();
         for (View view : views) {
             flattenViewList.add(view);
@@ -202,27 +210,28 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
         return flattenViewList;
     }
 
-
-    private static boolean hasNestedViews(@NotNull Collection<View> views) {
+    private boolean hasNestedViews(@NotNull Collection<View> views) {
         return views.stream().anyMatch(View::hasNestedView);
     }
 
     private class MyMouseAdapter extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
-            List<View> views = browserPanel.getJenkins().getViews();
+            Collection<View> views = browserPanel.getJenkins().getViews();
             if (views.isEmpty()) {
                 return;
             }
 
-            final JBList viewList = buildViewList(views, browserPanel);
+            final JBList viewList = buildViewList(views);
 
             JBPopup popup = new PopupChooserBuilder(viewList)
                     .setMovable(false)
                     .setCancelKeyEnabled(true)
                     .setItemChoosenCallback(() -> {
                         final View view = (View) viewList.getSelectedValue();
-                        if (view == null || view.hasNestedView()) return;
+                        if (view == null || view.hasNestedView()) {
+                            return;
+                        }
 
                         browserPanel.loadView(view);
                     })

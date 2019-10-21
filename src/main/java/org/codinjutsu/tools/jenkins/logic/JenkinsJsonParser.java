@@ -18,7 +18,11 @@ package org.codinjutsu.tools.jenkins.logic;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.codinjutsu.tools.jenkins.model.*;
+import org.codinjutsu.tools.jenkins.model.Build;
+import org.codinjutsu.tools.jenkins.model.Jenkins;
+import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.JobParameter;
+import org.codinjutsu.tools.jenkins.model.View;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -185,7 +189,7 @@ public class JenkinsJsonParser implements JenkinsParser {
 
     private List<Build> getBuilds(Iterable<JSONObject> buildsObjects) {
         List<Build> builds = new LinkedList<>();
-        for (JSONObject obj: buildsObjects) {
+        for (JSONObject obj : buildsObjects) {
             builds.add(getBuild(obj));
         }
         return builds;
@@ -193,26 +197,15 @@ public class JenkinsJsonParser implements JenkinsParser {
 
     private Job getJob(JSONObject jsonObject) {
         Job job = new Job();
-        String name = (String) jsonObject.get(JOB_NAME);
-        job.setName(name);
-
-        String displayName = (String) jsonObject.get(JOB_DISPLAY_NAME);
-        job.setDisplayName(displayName);
-
-        String url = (String) jsonObject.get(JOB_URL);
-        job.setUrl(url);
-
-        String color = (String) jsonObject.get(JOB_COLOR);
-        job.setColor(color);
-        JSONArray healths = (JSONArray) jsonObject.get(JOB_HEALTH);
-        job.setHealth(getHealth(healths));
-        final boolean buildable = getBoolean(jsonObject.get(JOB_IS_BUILDABLE));
-        job.setBuildable(buildable);
-        final boolean inQueue = getBoolean(jsonObject.get(JOB_IS_IN_QUEUE));
-        job.setInQueue(inQueue);
-
-        JSONObject lastBuildObject = (JSONObject) jsonObject.get(JOB_LAST_BUILD);
-        job.setLastBuild(getLastBuild(lastBuildObject));
+        job.setName((String) jsonObject.get(JOB_NAME));
+        job.setDisplayName((String) jsonObject.get(JOB_DISPLAY_NAME));
+        job.setFullDisplayName((String) jsonObject.get(JOB_FULLDISPLAY_NAME));
+        job.setUrl((String) jsonObject.get(JOB_URL));
+        job.setColor((String) jsonObject.get(JOB_COLOR));
+        job.setHealth(getHealth((JSONArray) jsonObject.get(JOB_HEALTH)));
+        job.setBuildable(getBoolean(jsonObject.get(JOB_IS_BUILDABLE)));
+        job.setInQueue(getBoolean(jsonObject.get(JOB_IS_IN_QUEUE)));
+        job.setLastBuild(getLastBuild((JSONObject) jsonObject.get(JOB_LAST_BUILD)));
         JSONArray parameterProperty = (JSONArray) jsonObject.get(PARAMETER_PROPERTY);
         job.addParameters(getParameters(parameterProperty));
         return job;
@@ -284,9 +277,9 @@ public class JenkinsJsonParser implements JenkinsParser {
         health.setDescription(description);
         String healthLevel = (String) healthObject.get(JOB_HEALTH_ICON);
         if (StringUtils.isNotEmpty(healthLevel)) {
-            if (healthLevel.endsWith(".png"))
+            if (healthLevel.endsWith(".png")) {
                 healthLevel = healthLevel.substring(0, healthLevel.lastIndexOf(".png"));
-            else {
+            } else {
                 healthLevel = healthLevel.substring(0, healthLevel.lastIndexOf(".gif"));
             }
         } else {

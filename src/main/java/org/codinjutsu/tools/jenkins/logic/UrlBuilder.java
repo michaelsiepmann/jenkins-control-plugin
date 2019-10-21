@@ -27,6 +27,15 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.join;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_DURATION;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_ID;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_IS_BUILDING;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_NUMBER;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_RESULT;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_TIMESTAMP;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_URL;
+
 public class UrlBuilder {
 
     private static final String API_JSON = "/api/json";
@@ -34,12 +43,14 @@ public class UrlBuilder {
     private static final String PARAMETERIZED_BUILD = "/buildWithParameters";
     private static final String RSS_LATEST = "/rssLatest";
     private static final String TREE_PARAM = "?tree=";
+    private static final String BASIC_BUILD_INFO = join(
+            new String[]{BUILD_ID, BUILD_URL, BUILD_IS_BUILDING, BUILD_RESULT, BUILD_NUMBER, BUILD_TIMESTAMP, BUILD_DURATION},
+            ",");
     private static final String BASIC_JENKINS_INFO = "nodeName,nodeDescription,primaryView[name,url],views[name,url,views[name,url]]";
-    private static final String BASIC_JOB_INFO = "name,displayName,url,color,buildable,inQueue,healthReport[description,iconUrl],lastBuild[id,url,building,result,number,timestamp,duration],property[parameterDefinitions[name,type,defaultParameterValue[value],choices]]";
+    private static final String BASIC_JOB_INFO = "name,displayName,fullDisplayName,url,color,buildable,inQueue,healthReport[description,iconUrl],lastBuild[" + BASIC_BUILD_INFO + "],property[parameterDefinitions[name,type,defaultParameterValue[value],choices]]";
     private static final String BASIC_VIEW_INFO = "name,url,jobs[" + BASIC_JOB_INFO + "]";
     private static final String CLOUDBEES_VIEW_INFO = "name,url,views[jobs[" + BASIC_JOB_INFO + "]]";
     private static final String TEST_CONNECTION_REQUEST = "?tree=nodeName";
-    private static final String BASIC_BUILD_INFO = "id,url,building,result,number,timestamp,duration";
     private static final String BASIC_BUILDS_INFO = "builds[" + BASIC_BUILD_INFO + "]";
 
     public static UrlBuilder getInstance(Project project) {
