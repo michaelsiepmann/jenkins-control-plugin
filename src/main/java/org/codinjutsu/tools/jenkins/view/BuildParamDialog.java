@@ -40,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
@@ -108,6 +109,7 @@ public class BuildParamDialog extends JDialog {
         contentPanel.setLayout(new SpringLayout());
         List<JobParameter> parameters = job.getParameters();
 
+        int rows = parameters.size();
         for (JobParameter jobParameter : parameters) {
             JComponent inputField = createInputField(jobParameter);
 
@@ -128,11 +130,22 @@ public class BuildParamDialog extends JDialog {
             contentPanel.add(label);
             contentPanel.add(inputField);
 
+            String description = jobParameter.getDescription();
+            if (StringUtils.isNotEmpty(description)) {
+                JLabel placeHolder = new JLabel("", JLabel.CENTER);
+                JTextPane descText = new JTextPane();
+                descText.setText(description);
+
+                contentPanel.add(placeHolder);
+                contentPanel.add(descText);
+                rows++;
+            }
+
             inputFieldByParameterMap.put(jobParameter, inputField);
         }
 
         SpringUtilities.makeCompactGrid(contentPanel,
-                parameters.size(), 2,
+                rows, 2,
                 6, 6,        //initX, initY
                 6, 6);       //xPad, yPad
 

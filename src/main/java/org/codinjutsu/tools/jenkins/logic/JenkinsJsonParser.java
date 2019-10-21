@@ -31,6 +31,8 @@ import org.json.simple.parser.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 public class JenkinsJsonParser implements JenkinsParser {
 
     private static final Logger LOG = Logger.getLogger(JenkinsJsonParser.class);
@@ -240,6 +242,10 @@ public class JenkinsJsonParser implements JenkinsParser {
 
                 String name = (String) parameterObj.get(PARAMETER_NAME);
                 jobParameter.setName(name);
+                String description = (String) parameterObj.get(PARAMETER_DESCRIPTION);
+                if (isNotEmpty(description)) {
+                    jobParameter.setDescription(description);
+                }
                 String type = (String) parameterObj.get(PARAMETER_TYPE);
                 jobParameter.setType(type);
                 JSONArray choices = (JSONArray) parameterObj.get(PARAMETER_CHOICE);
@@ -276,7 +282,7 @@ public class JenkinsJsonParser implements JenkinsParser {
         String description = (String) healthObject.get(JOB_HEALTH_DESCRIPTION);
         health.setDescription(description);
         String healthLevel = (String) healthObject.get(JOB_HEALTH_ICON);
-        if (StringUtils.isNotEmpty(healthLevel)) {
+        if (isNotEmpty(healthLevel)) {
             if (healthLevel.endsWith(".png")) {
                 healthLevel = healthLevel.substring(0, healthLevel.lastIndexOf(".png"));
             } else {
