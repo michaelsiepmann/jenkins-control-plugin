@@ -144,6 +144,14 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         return false;
     }
 
+    public int getNumBuildRetries() {
+        return myState.numBuildRetries;
+    }
+
+    public void setNumBuildRetries(int numBuildRetries) {
+        myState.numBuildRetries = numBuildRetries;
+    }
+
     public static class State {
 
         public String serverUrl = DUMMY_JENKINS_SERVER_URL;
@@ -151,7 +159,7 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         public int jobRefreshPeriod = RESET_PERIOD_VALUE;
         public int rssRefreshPeriod = RESET_PERIOD_VALUE;
         public String suffix = "";
-
+        public int numBuildRetries = 1;
         public RssSettings rssSettings = new RssSettings();
     }
 

@@ -21,15 +21,33 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
+import org.codinjutsu.tools.jenkins.jobtracker.JobTracker;
+import org.codinjutsu.tools.jenkins.jobtracker.TraceableBuildJob;
+import org.codinjutsu.tools.jenkins.jobtracker.TraceableBuildJobFactory;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.model.JobParameter;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.util.SpringUtilities;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,24 +157,20 @@ public class BuildParamDialog extends JDialog {
     }
 
     private JComponent createInputField(JobParameter jobParameter) {//TODO add wrapper
-
-        JobParameter.JobParameterType jobParameterType = jobParameter.getJobParameterType();
         String defaultValue = jobParameter.getDefaultValue();
-        JComponent inputField;
-
-        if (JobParameter.JobParameterType.ChoiceParameterDefinition.equals(jobParameterType)) {
-            inputField = createComboBox(jobParameter, defaultValue);
-        } else if (JobParameter.JobParameterType.BooleanParameterDefinition.equals(jobParameterType)) {
-            inputField = createCheckBox(defaultValue);
-        } else if (JobParameter.JobParameterType.StringParameterDefinition.equals(jobParameterType)) {
-            inputField = createTextField(defaultValue);
-        } else if (JobParameter.JobParameterType.PasswordParameterDefinition.equals(jobParameterType)) {
-            inputField = createPasswordField(defaultValue);
-        } else {
-            inputField = createErrorLabel(jobParameterType);
-            hasError = true;
+        switch (jobParameter.getJobParameterType()) {
+            case ChoiceParameterDefinition:
+                return createComboBox(jobParameter, defaultValue);
+            case BooleanParameterDefinition:
+                return createCheckBox(defaultValue);
+            case StringParameterDefinition:
+                return createTextField(defaultValue);
+            case PasswordParameterDefinition:
+                return createPasswordField(defaultValue);
+            default:
+                hasError = true;
+                return createErrorLabel(jobParameter.getJobParameterType());
         }
-        return inputField;
     }
 
     private JLabel createErrorLabel(JobParameter.JobParameterType jobParameterType) {
@@ -174,28 +188,30 @@ public class BuildParamDialog extends JDialog {
     private void onOK() {
         final Map<String, String> paramValueMap = getParamValueMap();
 
-            new SwingWorker<Void, Void>(){ //FIXME don't use swing worker
-                @Override
-                protected Void doInBackground() {
-                    requestManager.runParameterizedBuild(job, configuration, paramValueMap);
-                    return null;
+        new SwingWorker<Void, Void>() { //FIXME don't use swing worker
+            @Override
+            protected Void doInBackground() {
+                TraceableBuildJob buildJob = TraceableBuildJobFactory.INSTANCE.newBuildJob(job, configuration, paramValueMap, requestManager);
+                JobTracker.INSTANCE.registerJob(buildJob);
+                requestManager.runParameterizedBuild(job, configuration, paramValueMap);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                dispose();
+                try {
+                    get();
+                    runBuildCallback.notifyOnOk(job);
+                } catch (InterruptedException e) {
+                    logger.log(Level.WARN, "Exception occured while...", e);
+                } catch (ExecutionException e) {
+                    runBuildCallback.notifyOnError(job, e);
+                    logger.log(Level.WARN, "Exception occured while trying to invoke build", e);
                 }
 
-                @Override
-                protected void done() {
-                    dispose();
-                    try {
-                        get();
-                        runBuildCallback.notifyOnOk(job);
-                    } catch (InterruptedException e) {
-                        logger.log(Level.WARN, "Exception occured while...", e);
-                    } catch (ExecutionException e) {
-                        runBuildCallback.notifyOnError(job, e);
-                        logger.log(Level.WARN, "Exception occured while trying to invoke build", e);
-                    }
-
-                }
-            }.execute();
+            }
+        }.execute();
     }
 
     private void onCancel() {
