@@ -16,51 +16,59 @@
 
 package org.codinjutsu.tools.jenkins.logic;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedBuild;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedBuilds;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedHealth;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedJob;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedJobs;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedParameter;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedParameterDefinition;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedParameterDefinitionDefault;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedView;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedViews;
+import org.codinjutsu.tools.jenkins.logic.json.ParsedWorkspace;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.model.JobParameter;
 import org.codinjutsu.tools.jenkins.model.View;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class JenkinsJsonParser implements JenkinsParser {
 
     private static final Logger LOG = Logger.getLogger(JenkinsJsonParser.class);
 
-    private static boolean getBoolean(Object obj) {
-        return Boolean.TRUE.equals(obj);
-    }
-
     @Override
     public Jenkins createWorkspace(String jsonData, String serverUrl) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
-
-        JSONParser parser = new JSONParser();
         Jenkins jenkins = new Jenkins("", serverUrl);
-
         try {
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
-            JSONObject primaryViewObject = (JSONObject) jsonObject.get(PRIMARY_VIEW);
+            ParsedWorkspace workspace = createObjectMapper().readValue(jsonData, ParsedWorkspace.class);
+            ParsedView primaryViewObject = workspace.getPrimaryView();
             if (primaryViewObject != null) {
                 jenkins.setPrimaryView(getView(primaryViewObject));
             }
 
-            JSONArray viewsObject = (JSONArray) jsonObject.get(VIEWS);
-            if (viewsObject != null) {
-                jenkins.setViews(getViews(viewsObject));
+            Collection<ParsedView> views = workspace.getViews();
+            if (views != null && !views.isEmpty()) {
+                jenkins.setViews(getViews(views));
             }
-
-        } catch (ParseException e) {
+        } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
@@ -68,42 +76,30 @@ public class JenkinsJsonParser implements JenkinsParser {
         return jenkins;
     }
 
-    private List<View> getViews(Iterable<JSONObject> viewsObjects) {
+    private ObjectMapper createObjectMapper() {
+        return new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    private List<View> getViews(Iterable<ParsedView> viewsObjects) {
         List<View> views = new LinkedList<>();
-        for (JSONObject obj : viewsObjects) {
+        for (ParsedView obj : viewsObjects) {
             views.add(getView(obj));
         }
-
         return views;
     }
 
-    private View getView(JSONObject viewObject) {
+    private View getView(ParsedView viewObject) {
         View view = new View();
         view.setNested(false);
-        String name = (String) viewObject.get(VIEW_NAME);
-        if (name != null) {
-            view.setName(name);
-        }
-
-        String url = (String) viewObject.get(VIEW_URL);
-        if (name != null) {
-            view.setUrl(url);
-        }
-
-        Iterable subViewObjs = (JSONArray) viewObject.get(VIEWS);
-        if (subViewObjs != null) {
-            for (Object obj : subViewObjs) {
-                JSONObject subviewObj = (JSONObject) obj;
-
+        view.setName(viewObject.getName());
+        view.setUrl(viewObject.getUrl());
+        Collection<ParsedView> subViewObjs = viewObject.getSubViews();
+        if (subViewObjs != null && !subViewObjs.isEmpty()) {
+            for (ParsedView obj : subViewObjs) {
                 View nestedView = new View();
                 nestedView.setNested(true);
-
-                String currentName = (String) subviewObj.get(VIEW_NAME);
-                nestedView.setName(currentName);
-
-                String subViewUrl = (String) subviewObj.get(VIEW_URL);
-                nestedView.setUrl(subViewUrl);
-
+                nestedView.setName(obj.getName());
+                nestedView.setUrl(obj.getUrl());
                 view.addSubView(nestedView);
             }
         }
@@ -114,13 +110,10 @@ public class JenkinsJsonParser implements JenkinsParser {
     public Job createJob(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
-        JSONParser parser = new JSONParser();
         try {
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
-
-            return getJob(jsonObject);
-
-        } catch (ParseException e) {
+            ParsedJob job = createObjectMapper().readValue(jsonData, ParsedJob.class);
+            return getJob(job);
+        } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
@@ -130,14 +123,11 @@ public class JenkinsJsonParser implements JenkinsParser {
 
     public Build createBuild(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
-
-        JSONParser parser = new JSONParser();
         try {
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
+            ParsedBuild build = createObjectMapper().readValue(jsonData, ParsedBuild.class);
+            return getBuild(build);
 
-            return getBuild(jsonObject);
-
-        } catch (ParseException e) {
+        } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
@@ -147,41 +137,33 @@ public class JenkinsJsonParser implements JenkinsParser {
     @Override
     public List<Build> createBuilds(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
-
-        JSONParser parser = new JSONParser();
         try {
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
-            JSONArray buildsObject = (JSONArray) jsonObject.get(BUILDS);
-            return getBuilds(buildsObject);
-
-        } catch (ParseException e) {
+            ParsedBuilds builds = createObjectMapper().readValue(jsonData, ParsedBuilds.class);
+            return getBuilds(builds.getBuilds());
+        } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
         }
     }
 
-    private Build getBuild(JSONObject lastBuildObject) {
+    @Nullable
+    private Build getBuild(ParsedBuild lastBuildObject) {
         if (lastBuildObject == null) {
             return null;
         }
 
         Build build = new Build();
-        String buildDate = (String) lastBuildObject.get(BUILD_ID);
-        build.setBuildDate(buildDate);
-        final boolean building = getBoolean(lastBuildObject.get(BUILD_IS_BUILDING));
-        build.setBuilding(building);
-        Long number = (Long) lastBuildObject.get(BUILD_NUMBER);
-        build.setNumber(number.intValue());
-        String status = (String) lastBuildObject.get(BUILD_RESULT);
-        build.setStatus(status);
-        String url = (String) lastBuildObject.get(BUILD_URL);
-        build.setUrl(url);
-        Long timestamp = (Long) lastBuildObject.get(BUILD_TIMESTAMP);
+        build.setBuildDate(lastBuildObject.getId());
+        build.setBuilding(lastBuildObject.getBuilding());
+        build.setNumber(lastBuildObject.getNumber());
+        build.setStatus(lastBuildObject.getStatus());
+        build.setUrl(lastBuildObject.getUrl());
+        Long timestamp = lastBuildObject.getTimestamp();
         if (null != timestamp) {
             build.setTimestamp(timestamp);
         }
-        Long duration = (Long) lastBuildObject.get(BUILD_DURATION);
+        Long duration = lastBuildObject.getDuration();
         if (null != duration) {
             build.setDuration(duration);
         }
@@ -189,135 +171,105 @@ public class JenkinsJsonParser implements JenkinsParser {
         return build;
     }
 
-    private List<Build> getBuilds(Iterable<JSONObject> buildsObjects) {
-        List<Build> builds = new LinkedList<>();
-        for (JSONObject obj : buildsObjects) {
-            builds.add(getBuild(obj));
-        }
-        return builds;
+    private List<Build> getBuilds(Collection<ParsedBuild> buildsObjects) {
+        return buildsObjects.stream().map(this::getBuild).collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private Job getJob(JSONObject jsonObject) {
+    private Job getJob(ParsedJob parsedJob) {
         Job job = new Job();
-        job.setName((String) jsonObject.get(JOB_NAME));
-        job.setDisplayName((String) jsonObject.get(JOB_DISPLAY_NAME));
-        job.setFullDisplayName((String) jsonObject.get(JOB_FULLDISPLAY_NAME));
-        job.setUrl((String) jsonObject.get(JOB_URL));
-        job.setColor((String) jsonObject.get(JOB_COLOR));
-        job.setHealth(getHealth((JSONArray) jsonObject.get(JOB_HEALTH)));
-        job.setBuildable(getBoolean(jsonObject.get(JOB_IS_BUILDABLE)));
-        job.setInQueue(getBoolean(jsonObject.get(JOB_IS_IN_QUEUE)));
-        job.setLastBuild(getLastBuild((JSONObject) jsonObject.get(JOB_LAST_BUILD)));
-        JSONArray parameterProperty = (JSONArray) jsonObject.get(PARAMETER_PROPERTY);
-        job.addParameters(getParameters(parameterProperty));
+        job.setName(parsedJob.getName());
+        job.setDisplayName(parsedJob.getDisplayName());
+        job.setFullDisplayName(parsedJob.getFullDisplayName());
+        job.setUrl(parsedJob.getUrl());
+        job.setColor(parsedJob.getColor());
+        job.setHealth(getHealth(parsedJob.getHealths()));
+        job.setBuildable(parsedJob.getBuildable());
+        job.setInQueue(parsedJob.getInQueue());
+        job.setLastBuild(getLastBuild(parsedJob.getLastBuild()));
+        job.addParameters(getParameters(parsedJob.getParameters()));
         return job;
     }
 
-    private List<JobParameter> getParameters(List<JSONObject> parameterProperties) {
+    private List<JobParameter> getParameters(Collection<ParsedParameter> parameterProperties) {
         List<JobParameter> jobParameters = new LinkedList<>();
         if (parameterProperties == null || parameterProperties.isEmpty()) {
-            return jobParameters;
+            return emptyList();
         }
 
-        for (JSONObject obj : parameterProperties) {
-            if (obj == null || obj.isEmpty()) {
-                continue;
-            }
-
-
-            JSONArray definitions = (JSONArray) obj.get(PARAMETER_DEFINITIONS);
+        for (ParsedParameter obj : parameterProperties) {
+            Collection<ParsedParameterDefinition> definitions = obj.getDefinitions();
             if (definitions == null) {
                 continue;
             }
-            for (Object defObj : definitions) {
-                JSONObject parameterObj = (JSONObject) defObj;
+            for (ParsedParameterDefinition defObj : definitions) {
                 JobParameter jobParameter = new JobParameter();
-                JSONObject defaultParamObj = (JSONObject) parameterObj.get(PARAMETER_DEFAULT_PARAM);
-                if (defaultParamObj != null && !defaultParamObj.isEmpty()) {
-                    Object defaultValue = defaultParamObj.get(PARAMETER_DEFAULT_PARAM_VALUE);
+                ParsedParameterDefinitionDefault defaultParamObj = defObj.getDefaultValue();
+                if (defaultParamObj != null) {
+                    String defaultValue = defaultParamObj.getValue();
                     if (defaultValue != null) {
-                        jobParameter.setDefaultValue(defaultValue.toString());
+                        jobParameter.setDefaultValue(defaultValue);
                     }
                 }
 
-                String name = (String) parameterObj.get(PARAMETER_NAME);
-                jobParameter.setName(name);
-                String description = (String) parameterObj.get(PARAMETER_DESCRIPTION);
+                jobParameter.setName(defObj.getName());
+                String description = defObj.getDescription();
                 if (isNotEmpty(description)) {
                     jobParameter.setDescription(description);
                 }
-                String type = (String) parameterObj.get(PARAMETER_TYPE);
-                jobParameter.setType(type);
-                JSONArray choices = (JSONArray) parameterObj.get(PARAMETER_CHOICE);
-                jobParameter.setChoices(getChoices(choices));
-
+                jobParameter.setType(defObj.getType());
+                jobParameter.setChoices(getChoices(defObj.getChoices()));
                 jobParameters.add(jobParameter);
             }
         }
         return jobParameters;
     }
 
-    private List<String> getChoices(JSONArray choiceObjs) {
-        List<String> choices = new LinkedList<>();
-        if (choiceObjs == null || choiceObjs.isEmpty()) {
-            return choices;
+    private List<String> getChoices(Collection<String> paramChoices) {
+        if (paramChoices == null || paramChoices.isEmpty()) {
+            return emptyList();
         }
-        for (Object choiceObj : choiceObjs) {
-            choices.add((String) choiceObj);
-        }
-        return choices;
+        return new LinkedList<>(paramChoices);
     }
 
-    private Build getLastBuild(JSONObject lastBuildObject) {
+    private Build getLastBuild(ParsedBuild lastBuildObject) {
         return getBuild(lastBuildObject);
     }
 
-    private Job.Health getHealth(JSONArray healths) {
+    @Contract("null -> null")
+    @Nullable
+    private Job.Health getHealth(Collection<ParsedHealth> healths) {
         if (healths == null || healths.isEmpty()) {
             return null;
         }
 
         Job.Health health = new Job.Health();
-        JSONObject healthObject = (JSONObject) healths.get(0);
-        String description = (String) healthObject.get(JOB_HEALTH_DESCRIPTION);
-        health.setDescription(description);
-        String healthLevel = (String) healthObject.get(JOB_HEALTH_ICON);
-        if (isNotEmpty(healthLevel)) {
-            if (healthLevel.endsWith(".png")) {
-                healthLevel = healthLevel.substring(0, healthLevel.lastIndexOf(".png"));
-            } else {
-                healthLevel = healthLevel.substring(0, healthLevel.lastIndexOf(".gif"));
-            }
-        } else {
-            healthLevel = null;
-        }
-
-        health.setLevel(healthLevel);
-
-        if (!StringUtils.isEmpty(health.getLevel())) {
+        ParsedHealth h = (ParsedHealth) CollectionUtils.get(healths, 0);
+        health.setDescription(h.getDescription());
+        health.setLevel(getHealthLevel(h));
+        if (isNotEmpty(health.getLevel())) {
             return health;
-        } else {
-            return null;
         }
+        return null;
+    }
+
+    @Nullable
+    private String getHealthLevel(ParsedHealth health) {
+        String healthLevel = health.getIcon();
+        if (isNotEmpty(healthLevel)) {
+            String suffix = healthLevel.endsWith(".png") ? ".png" : ".gif";
+            return healthLevel.substring(0, healthLevel.lastIndexOf(suffix));
+        }
+        return null;
     }
 
     @Override
     public List<Job> createViewJobs(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
-        JSONParser parser = new JSONParser();
-
         try {
-            List<Job> jobs = new LinkedList<>();
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
-            JSONArray jobObjects = (JSONArray) jsonObject.get(JOBS);
-            for (Object object : jobObjects) {
-                JSONObject jobObject = (JSONObject) object;
-                jobs.add(getJob(jobObject));
-            }
-
-            return jobs;
-        } catch (ParseException e) {
+            ParsedJobs parsedJobs = createObjectMapper().readValue(jsonData, ParsedJobs.class);
+            return parsedJobs.getJobs().stream().map(this::getJob).collect(Collectors.toCollection(LinkedList::new));
+        } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
@@ -328,39 +280,29 @@ public class JenkinsJsonParser implements JenkinsParser {
     public List<Job> createCloudbeesViewJobs(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
-        JSONParser parser = new JSONParser();
-
         try {
-            List<Job> jobs = new LinkedList<>();
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
-            JSONArray viewObjs = (JSONArray) jsonObject.get(VIEWS);
-            if (viewObjs == null && viewObjs.isEmpty()) {
-                return jobs;
+            ParsedViews parsedViews = createObjectMapper().readValue(jsonData, ParsedViews.class);
+            Collection<ParsedView> viewObjs = parsedViews.getViews();
+            if (viewObjs == null || viewObjs.isEmpty()) {
+                return emptyList();
             }
 
-            JSONObject viewJobObj = (JSONObject) viewObjs.get(0);
-            if (viewJobObj == null) {
-                return jobs;
+            ParsedView view = (ParsedView) CollectionUtils.get(viewObjs, 0);
+            Collection<ParsedJob> jobs = view.getJobs();
+            if (jobs == null) {
+                return emptyList();
             }
-
-            JSONArray jobObjs = (JSONArray) viewJobObj.get(JOBS);
-            for (Object obj : jobObjs) {
-                JSONObject jobObj = (JSONObject) obj;
-                jobs.add(getJob(jobObj));
-            }
-
-            return jobs;
-        } catch (ParseException e) {
+            return jobs.stream().map(this::getJob).collect(Collectors.toCollection(LinkedList::new));
+        } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
             throw new RuntimeException(e);
         }
     }
 
-
     private void checkJsonDataAndThrowExceptionIfNecessary(String jsonData) {
         if (StringUtils.isEmpty(jsonData) || "{}".equals(jsonData)) {
-            String message = String.format("Empty JSON data!");
+            String message = "Empty JSON data!";
             LOG.error(message);
             throw new IllegalStateException(message);
         }
