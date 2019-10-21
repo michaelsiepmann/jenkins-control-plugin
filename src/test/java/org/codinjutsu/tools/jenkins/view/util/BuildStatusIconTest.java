@@ -21,7 +21,7 @@ import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 import static junit.framework.Assert.assertEquals;
 

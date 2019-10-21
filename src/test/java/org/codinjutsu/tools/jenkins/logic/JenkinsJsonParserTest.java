@@ -26,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class JenkinsJsonParserTest {
     public void loadJenkinsWorkSpace() throws Exception {
         Jenkins jenkins = jsonParser.createWorkspace(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadWorkspace.json")), "http://myjenkins");
 
-        List<View> actualViews = jenkins.getViews();
+        Collection<View> actualViews = jenkins.getViews();
 
         assertReflectionEquals(
                 asList(View.createView("Framework", "http://myjenkins/view/Framework/"),
@@ -57,7 +58,7 @@ public class JenkinsJsonParserTest {
     public void loadJenkinsWorkSpaceWithNestedViews() throws Exception {
         Jenkins jenkins = jsonParser.createWorkspace(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadWorkspaceWithNestedView.json")), "http://myjenkins");
 
-        List<View> actualViews = jenkins.getViews();
+        Collection<View> actualViews = jenkins.getViews();
 
         Collection<View> expectedViews = new LinkedList<>();
         expectedViews.add(View.createView("Framework", "http://myjenkins/view/Framework/"));
@@ -81,17 +82,17 @@ public class JenkinsJsonParserTest {
 
         Collection<Job> expectedJobs = new LinkedList<>();
         expectedJobs.add(new JobBuilder().job("sql-tools", "blue", "http://myjenkins/job/sql-tools/", "true", "true")
-                .lastBuild("http://myjenkins/job/sql-tools/15/", "15", SUCCESS.getStatus(), "false", "2012-04-02_15-26-29", 1477640156281l, 4386421l)
+                .lastBuild("http://myjenkins/job/sql-tools/15/", "15", SUCCESS.getStatus(), "false", "2012-04-02_15-26-29", 1477640156281L, 4386421L)
                 .health("health-80plus", "0 tests en echec sur un total de 24 tests").get());
         expectedJobs.add(new JobBuilder().job("db-utils", "grey", "http://myjenkins/job/db-utils/", "false", "true").get());
         expectedJobs.add(new JobBuilder().job("myapp", "red", "http://myjenkins/job/myapp/", "false", "true")
-                .lastBuild("http://myjenkins/job/myapp/12/", "12", FAILURE.getStatus(), "true", "2012-04-02_16-26-29", 1477640156281l, 4386421l)
+                .lastBuild("http://myjenkins/job/myapp/12/", "12", FAILURE.getStatus(), "true", "2012-04-02_16-26-29", 1477640156281L, 4386421L)
                 .health("health-00to19", "24 tests en echec sur un total de 24 tests")
                 .parameter("param1", "ChoiceParameterDefinition", "value1", "value1", "value2", "value3")
                 .parameter("runIntegrationTest", "BooleanParameterDefinition", null)
                 .get());
         expectedJobs.add(new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "true", "false")
-                .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281l, 4386421l)
+                .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281L, 4386421L)
                 .health("health20to39", "0 tests en echec sur un total de 24 tests")
                 .parameter("dummyParam", null, null)
                 .get());
@@ -105,7 +106,7 @@ public class JenkinsJsonParserTest {
 
         Collection<Job> expectedJobs = new LinkedList<>();
         expectedJobs.add(new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "false", "false")
-                .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281l, 4386421l)
+                .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281L, 4386421L)
                 .health("health20to39", "0 tests en echec sur un total de 24 tests")
                 .parameter("dummyParam", null, null)
                 .get());
@@ -147,17 +148,17 @@ public class JenkinsJsonParserTest {
 
         List<Job> expectedJobs = Arrays.asList(
                 new JobBuilder().job("sql-tools", "blue", "http://myjenkins/job/sql-tools/", "true", "true")
-                        .lastBuild("http://myjenkins/job/sql-tools/15/", "15", SUCCESS.getStatus(), "false", "2012-04-02_15-26-29", 1477640156281l, 4386421l)
+                        .lastBuild("http://myjenkins/job/sql-tools/15/", "15", SUCCESS.getStatus(), "false", "2012-04-02_15-26-29", 1477640156281L, 4386421L)
                         .health("health-80plus", "0 tests en echec sur un total de 24 tests").get(),
                 new JobBuilder().job("db-utils", "grey", "http://myjenkins/job/db-utils/", "false", "true").get(),
                 new JobBuilder().job("myapp", "red", "http://myjenkins/job/myapp/", "false", "true")
-                        .lastBuild("http://myjenkins/job/myapp/12/", "12", FAILURE.getStatus(), "true", "2012-04-02_16-26-29", 1477640156281l, 4386421l)
+                        .lastBuild("http://myjenkins/job/myapp/12/", "12", FAILURE.getStatus(), "true", "2012-04-02_16-26-29", 1477640156281L, 4386421L)
                         .health("health-00to19", "24 tests en echec sur un total de 24 tests")
                         .parameter("param1", "ChoiceParameterDefinition", "value1", "value1", "value2", "value3")
                         .parameter("runIntegrationTest", "BooleanParameterDefinition", null)
                         .get(),
                 new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "true", "false")
-                        .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281l, 4386421l)
+                        .lastBuild("http://myjenkins/job/swing-utils/5/", "5", FAILURE.getStatus(), "false", "2012-04-02_10-26-29", 1477640156281L, 4386421L)
                         .health("health20to39", "0 tests en echec sur un total de 24 tests")
                         .parameter("dummyParam", null, null)
                         .get());
@@ -171,7 +172,7 @@ public class JenkinsJsonParserTest {
 
         assertReflectionEquals(new JobBuilder()
                 .job("config-provider-model", "blue", "http://ci.jenkins-ci.org/job/config-provider-model/", "false", "true")
-                .lastBuild("http://ci.jenkins-ci.org/job/config-provider-model/8/", "8", "SUCCESS", "false", "2012-04-02_16-26-29", 1477640156281l, 4386421l)
+                .lastBuild("http://ci.jenkins-ci.org/job/config-provider-model/8/", "8", "SUCCESS", "false", "2012-04-02_16-26-29", 1477640156281L, 4386421L)
                 .health("health-80plus", "0 tests en echec sur un total de 24 tests")
                 .get(), actualJob);
     }
@@ -185,7 +186,7 @@ public class JenkinsJsonParserTest {
         List<Job> expectedJobs = Arrays.asList(
                 new JobBuilder()
                         .job("abris", "blue", "http://jenkins.home.lobach.info:8080/job/abris/", "false", "true")
-                        .lastBuild("http://jenkins.home.lobach.info:8080/job/abris/80/", "80", "SUCCESS", "false", "2012-11-04_14-56-10", 1477640156281l, 4386421l)
+                        .lastBuild("http://jenkins.home.lobach.info:8080/job/abris/80/", "80", "SUCCESS", "false", "2012-11-04_14-56-10", 1477640156281L, 4386421L)
                         .health("health-20to39", "Clover Coverage: Elements 23% (4292/18940)")
                         .get(),
                 new JobBuilder()
@@ -193,7 +194,7 @@ public class JenkinsJsonParserTest {
                         .get(),
                 new JobBuilder()
                         .job("zfImageFilter", "blue", "http://jenkins.home.lobach.info:8080/job/zfImageFilter/", "false", "true")
-                        .lastBuild("http://jenkins.home.lobach.info:8080/job/zfImageFilter/14/", "14", "SUCCESS", "false", "2011-10-13_11-16-52", 1477640156281l, 4386421l)
+                        .lastBuild("http://jenkins.home.lobach.info:8080/job/zfImageFilter/14/", "14", "SUCCESS", "false", "2011-10-13_11-16-52", 1477640156281L, 4386421L)
                         .health("health-00to19", "Clover Coverage: Statements 7% (10/136)")
                         .get()
 
@@ -207,10 +208,10 @@ public class JenkinsJsonParserTest {
         List<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadJobManyParameters.json"), "utf-8"));
 
 
-        List<Job> expectedJobs = Arrays.asList(
+        List<Job> expectedJobs = Collections.singletonList(
                 new JobBuilder()
                         .job("DummyProject", "Dummy Project", "red", "http://localhost:8484/jenkins/job/DummyProject/", "false", "true")
-                        .lastBuild("http://localhost:8484/jenkins/job/DummyProject/26/", "26", "FAILURE", "false", "2011-12-01_16-53-48", 1477640156281l, 4386421l)
+                        .lastBuild("http://localhost:8484/jenkins/job/DummyProject/26/", "26", "FAILURE", "false", "2011-12-01_16-53-48", 1477640156281L, 4386421L)
                         .health("health-00to19", "Stabilité du build: Tous les builds récents ont échoué.")
                         .parameter("runIntegrationTest", "BooleanParameterDefinition", "true")
                         .parameter("environment", "ChoiceParameterDefinition", "itg", "itg", "prp", "prd", "bench")

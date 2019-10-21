@@ -3,11 +3,9 @@ package org.codinjutsu.tools.jenkins.util;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.InputStream;
 
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by Cezary on 2015-10-18.

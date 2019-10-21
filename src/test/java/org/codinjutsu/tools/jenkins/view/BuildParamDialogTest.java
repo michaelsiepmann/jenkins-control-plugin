@@ -38,9 +38,14 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static junit.framework.Assert.assertTrue;
-import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.*;
+import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.BooleanParameterDefinition;
+import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.ChoiceParameterDefinition;
+import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.RunParameterDefinition;
+import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.StringParameterDefinition;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class BuildParamDialogTest {
 

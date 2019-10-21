@@ -18,19 +18,18 @@ package org.codinjutsu.tools.jenkins.model;
 
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.codinjutsu.tools.jenkins.model.BuildStatusEnum.SUCCESS;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class BuildTest {
 
     @Test
-    public void isAfter() throws Exception {
+    public void isAfter() {
         Build aBuild = build("815");
         Build anotherBuild = build("814");
 
@@ -41,7 +40,7 @@ public class BuildTest {
 
 
     @Test
-    public void isDisplayable() throws Exception {
+    public void isDisplayable() {
         Build currentBuild = build("815");
         Build newBuild = build("815");
         assertFalse(newBuild.isAfter(currentBuild));
