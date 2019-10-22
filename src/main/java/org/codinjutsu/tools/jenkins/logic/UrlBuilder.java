@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -167,6 +168,15 @@ public class UrlBuilder {
         return null;
     }
 
+    @Nullable
+    public URL createCrumbDataUrl(String serverUrl) {
+        try {
+            return new URL(serverUrl + "/crumbIssuer/api/xml?tree=crumb");
+        } catch (MalformedURLException e) {
+            handleException(e);
+        }
+        return null;
+    }
 
     private void handleException(Exception ex) {
         if (ex instanceof MalformedURLException) {

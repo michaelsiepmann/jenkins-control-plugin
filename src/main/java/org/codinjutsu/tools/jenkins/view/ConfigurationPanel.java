@@ -16,6 +16,7 @@
 
 package org.codinjutsu.tools.jenkins.view;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.JBColor;
@@ -25,6 +26,7 @@ import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 import org.codinjutsu.tools.jenkins.JenkinsSettings;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
+import org.codinjutsu.tools.jenkins.logic.UrlBuilder;
 import org.codinjutsu.tools.jenkins.security.AuthenticationException;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
@@ -33,6 +35,7 @@ import org.codinjutsu.tools.jenkins.view.annotation.GuiField;
 import org.codinjutsu.tools.jenkins.view.validator.NotNullValidator;
 import org.codinjutsu.tools.jenkins.view.validator.UIValidator;
 import org.codinjutsu.tools.jenkins.view.validator.UrlValidator;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -48,6 +51,7 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.Color;
+import java.net.URL;
 
 import static org.codinjutsu.tools.jenkins.view.validator.ValidatorTypeEnum.URL;
 
@@ -87,6 +91,7 @@ public class ConfigurationPanel {
     private JTextField replaceWithSuffix;
     private JRadioButton version1RadioButton;
     private JRadioButton version2RadioButton;
+    private JButton openCrumbDataURLButton;
 
     private final FormValidator formValidator;
 
@@ -146,6 +151,18 @@ public class ConfigurationPanel {
         testConnexionButton.addActionListener(event -> onConnectionClicked(project));
 
         formValidator = FormValidator.init(this).addValidator(username, (UIValidator<JTextField>) this::validateForm);
+        openCrumbDataURLButton.addActionListener(e -> openCrumbDataUrl(project));
+    }
+
+    private void openCrumbDataUrl(Project project) {
+        String server = serverUrl.getText();
+        if (StringUtils.isEmpty(server)) {
+            return;
+        }
+        URL crumbDataUrl = UrlBuilder.getInstance(project).createCrumbDataUrl(server);
+        if (crumbDataUrl != null) {
+            BrowserUtil.browse(crumbDataUrl);
+        }
     }
 
     private void onConnectionClicked(Project project) {
@@ -177,7 +194,7 @@ public class ConfigurationPanel {
         }
     }
 
-    private void validateForm(JTextField component) {
+    private void validateForm(@NotNull JTextField component) {
         if (StringUtils.isNotBlank(component.getText())) {
             String password = getPassword();
             if (StringUtils.isBlank(password)) {
@@ -187,7 +204,7 @@ public class ConfigurationPanel {
     }
 
     //TODO use annotation to create a guiwrapper so isModified could be simplified
-    public boolean isModified(JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) {
+    public boolean isModified(@NotNull JenkinsAppSettings jenkinsAppSettings, @NotNull JenkinsSettings jenkinsSettings) {
         boolean credentialModified = !(jenkinsSettings.getUsername().equals(username.getText()))
                 || isPasswordModified();
 
@@ -206,7 +223,7 @@ public class ConfigurationPanel {
     }
 
     //TODO use annotation to create a guiwrapper so isModified could be simplified
-    public void applyConfigurationData(JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) throws ConfigurationException {
+    public void applyConfigurationData(@NotNull JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) throws ConfigurationException {
         formValidator.validate();
 
         if (!StringUtils.equals(jenkinsAppSettings.getServerUrl(), serverUrl.getText())) {
@@ -335,14 +352,9 @@ public class ConfigurationPanel {
         return 0;
     }
 
-    private String getSuffix() {
-        return replaceWithSuffix.getText();
-    }
-
     public JPanel getRootPanel() {
         return rootPanel;
     }
-
 
     private void setConnectionFeedbackLabel(final Color labelColor, final String labelText) {
         GuiUtil.runInSwingThread(() -> {
