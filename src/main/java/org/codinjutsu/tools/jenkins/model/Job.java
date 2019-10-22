@@ -35,6 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_COLOR;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_DISPLAY_NAME;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_FULLDISPLAY_NAME;
+import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_FULL_NAME;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_HEALTH;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_IS_BUILDABLE;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_IS_IN_QUEUE;
@@ -50,6 +51,7 @@ public class Job {
 
     private String displayName;
     private String fullDisplayName;
+    private String fullName;
     private String url;
 
     private String color;
@@ -112,6 +114,8 @@ public class Job {
                     String displayName,
             @JsonProperty(JOB_FULLDISPLAY_NAME)
                     String fullDisplayName,
+            @JsonProperty(JOB_FULL_NAME)
+                    String fullName,
             @JsonProperty(JOB_URL)
                     String url,
             @JsonProperty(JOB_COLOR)
@@ -129,6 +133,7 @@ public class Job {
     ) {
         this(name, displayName, color, url, inQueue, buildable);
         this.fullDisplayName = fullDisplayName;
+        this.fullName = fullName;
         this.lastBuild = lastBuild;
         this.health = getHealth(healths);
         this.parameters.addAll(getParameterDefinitions(parameters));
@@ -201,6 +206,10 @@ public class Job {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getFullName() {
+        return fullName;
     }
 
     public String getColor() {

@@ -296,7 +296,7 @@ public class RequestManager implements RequestManagerInterface {
     @Override
     public String loadConsoleTextFor(Job job) {
         try {
-            JobWithDetails jobWithDetails = jenkinsServer.getJob(job.getDisplayName());
+            JobWithDetails jobWithDetails = jenkinsServer.getJob(job.getFullName());
             if (jobWithDetails == null) {
                 return null;
             }
@@ -314,7 +314,7 @@ public class RequestManager implements RequestManagerInterface {
     public List<TestResult> loadTestResultsFor(Job job) {
         try {
             List<TestResult> result = new ArrayList<>();
-            com.offbytwo.jenkins.model.Build lastCompletedBuild = jenkinsServer.getJob(job.getDisplayName()).getLastCompletedBuild();
+            com.offbytwo.jenkins.model.Build lastCompletedBuild = jenkinsServer.getJob(job.getFullName()).getLastCompletedBuild();
             if (lastCompletedBuild.getTestResult() != null) {
                 result.add(lastCompletedBuild.getTestResult());
             }

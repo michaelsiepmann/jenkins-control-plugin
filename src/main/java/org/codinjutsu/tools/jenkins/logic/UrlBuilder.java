@@ -48,7 +48,7 @@ public class UrlBuilder {
             new String[]{BUILD_ID, BUILD_URL, BUILD_IS_BUILDING, BUILD_RESULT, BUILD_NUMBER, BUILD_TIMESTAMP, BUILD_DURATION},
             ",");
     private static final String BASIC_JENKINS_INFO = "nodeName,nodeDescription,primaryView[name,url],views[name,url,views[name,url]]";
-    private static final String BASIC_JOB_INFO = "name,displayName,fullDisplayName,url,color,buildable,inQueue,healthReport[description,iconUrl],lastBuild[" + BASIC_BUILD_INFO + "],property[parameterDefinitions[name,type,defaultParameterValue[value],description,choices]]";
+    private static final String BASIC_JOB_INFO = "name,displayName,fullDisplayName,fullName,url,color,buildable,inQueue,healthReport[description,iconUrl],lastBuild[" + BASIC_BUILD_INFO + "],property[parameterDefinitions[name,type,defaultParameterValue[value],description,choices]]";
     private static final String BASIC_VIEW_INFO = "name,url,jobs[" + BASIC_JOB_INFO + "]";
     private static final String CLOUDBEES_VIEW_INFO = "name,url,views[jobs[" + BASIC_JOB_INFO + "]]";
     private static final String TEST_CONNECTION_REQUEST = "?tree=nodeName";
