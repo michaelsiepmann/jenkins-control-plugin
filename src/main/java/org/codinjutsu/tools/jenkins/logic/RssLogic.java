@@ -37,6 +37,7 @@ import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.JenkinsWidget;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -93,6 +94,7 @@ public class RssLogic implements Disposable {
         }
     }
 
+    @NotNull
     private Map<String, Build> loadAndReturnNewLatestBuilds() {
         Map<String, Build> latestBuildMap = requestManager.loadJenkinsRssLatestBuilds(jenkinsAppSettings);
         Map<String, Build> newBuildMap = new HashMap<>();
@@ -114,7 +116,7 @@ public class RssLogic implements Disposable {
         return newBuildMap;
     }
 
-    private void sendNotificationForEachBuild(Iterable<Build> buildToSortByDateDescending) {
+    private void sendNotificationForEachBuild(@NotNull Iterable<Build> buildToSortByDateDescending) {
         for (Build build : buildToSortByDateDescending) {
             NotificationType notificationType = getNotificationType(build.getStatus());
             JENKINS_RSS_GROUP
@@ -124,7 +126,7 @@ public class RssLogic implements Disposable {
     }
 
     @NotNull
-    private NotificationType getNotificationType(BuildStatusEnum status) {
+    private NotificationType getNotificationType(@NotNull BuildStatusEnum status) {
         switch (status) {
             case SUCCESS:
             case STABLE:
@@ -137,10 +139,11 @@ public class RssLogic implements Disposable {
         }
     }
 
-    private List<Build> sortByDateDescending(Map<String, Build> finishedBuilds) {
+    @NotNull
+    private List<Build> sortByDateDescending(@NotNull Map<String, Build> finishedBuilds) {
         final List<Build> buildToSortByDateDescending = new ArrayList<>(finishedBuilds.values());
 
-        buildToSortByDateDescending.sort(Comparator.comparing(Build::getBuildDate));
+        buildToSortByDateDescending.sort(Comparator.comparing(Build::getTimestamp));
         return buildToSortByDateDescending;
     }
 
@@ -159,7 +162,8 @@ public class RssLogic implements Disposable {
         GuiUtil.runInSwingThread(() -> balloon.show(new RelativePoint(JenkinsWidget.getInstance(project).getComponent(), new Point(0, 0)), Balloon.Position.above));
     }
 
-    private Map.Entry<String, Build> getFirstFailedBuild(Map<String, Build> finishedBuilds) {
+    @Nullable
+    private Map.Entry<String, Build> getFirstFailedBuild(@NotNull Map<String, Build> finishedBuilds) {
         for (Map.Entry<String, Build> buildByJobName : finishedBuilds.entrySet()) {
             Build build = buildByJobName.getValue();
             if (build.getStatus() == BuildStatusEnum.FAILURE) {
@@ -169,7 +173,7 @@ public class RssLogic implements Disposable {
         return null;
     }
 
-    private String buildMessage(Build build) {
+    private String buildMessage(@NotNull Build build) {
         BuildStatusEnum buildStatus = build.getStatus();
         String buildMessage = build.getMessage();
 

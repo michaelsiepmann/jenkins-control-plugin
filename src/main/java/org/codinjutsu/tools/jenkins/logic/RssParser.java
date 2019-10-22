@@ -26,6 +26,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -42,7 +43,6 @@ public class RssParser {
     private static final String RSS_TITLE = "title";
     private static final String RSS_LINK = "link";
     private static final String RSS_LINK_HREF = "href";
-    private static final String RSS_PUBLISHED = "published";
 
     public RssParser() {
     }
@@ -69,7 +69,8 @@ public class RssParser {
         }
     }
 
-    private Map<String, Build> createLatestBuildList(Document doc) {
+    @NotNull
+    private Map<String, Build> createLatestBuildList(@NotNull Document doc) {
 
         Map<String, Build> buildMap = new LinkedHashMap<>();
         Element rootElement = doc.getRootElement();
@@ -77,7 +78,6 @@ public class RssParser {
         List<Element> elements = rootElement.getChildren(RSS_ENTRY, rootElement.getNamespace());
         for (Element element : elements) {
             String title = element.getChildText(RSS_TITLE, rootElement.getNamespace());
-            String publishedBuild = element.getChildText(RSS_PUBLISHED, rootElement.getNamespace());
             String jobName = RssUtil.extractBuildJob(title);
             String number = RssUtil.extractBuildNumber(title);
             BuildStatusEnum status = RssUtil.extractStatus(title);
@@ -85,7 +85,7 @@ public class RssParser {
             String link = linkElement.getAttributeValue(RSS_LINK_HREF);
 
             if (!BuildStatusEnum.NULL.equals(status)) {
-                buildMap.put(jobName, Build.createBuildFromRss(link, number, status.getStatus(), Boolean.FALSE.toString(), publishedBuild, title));
+                buildMap.put(jobName, Build.createBuildFromRss(link, number, status.getStatus(), Boolean.FALSE.toString(), title));
 
             }
 

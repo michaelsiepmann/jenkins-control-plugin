@@ -26,7 +26,7 @@ public class BuildStatusAggregator implements BuildStatusVisitor {
 
     private int nbAbortedBuilds = 0;
 
-    private int nbJobs = 0;
+    private int nbJobs;
 
     public static BuildStatusAggregator EMPTY = new BuildStatusAggregator(0);
 

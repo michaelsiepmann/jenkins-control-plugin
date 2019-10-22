@@ -33,8 +33,8 @@ public class JobBuilder {
         return this;
     }
 
-    public JobBuilder lastBuild(String buildUrl, String number, String status, String isBuilding, String buildingDate, Long timestamp, Long duration) {
-        job.setLastBuild(Build.createBuildFromWorkspace(buildUrl, number, status, isBuilding, buildingDate, timestamp, duration));
+    public JobBuilder lastBuild(String buildUrl, String number, String status, String isBuilding, Long timestamp, Long duration) {
+        job.setLastBuild(Build.createBuildFromWorkspace(buildUrl, number, status, isBuilding, timestamp, duration));
         return this;
     }
 

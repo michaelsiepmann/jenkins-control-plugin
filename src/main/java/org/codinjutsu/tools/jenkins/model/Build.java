@@ -18,18 +18,15 @@ package org.codinjutsu.tools.jenkins.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.codinjutsu.tools.jenkins.util.DateUtil;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_DURATION;
-import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_ID;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_IS_BUILDING;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_NUMBER;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_RESULT;
@@ -41,7 +38,6 @@ public class Build {
     public static final Map<BuildStatusEnum, Icon> ICON_BY_BUILD_STATUS_MAP = new HashMap<>();
 
     private String url;
-    private Date buildDate;
     private int number;
     private boolean building;
     private String message;
@@ -61,31 +57,17 @@ public class Build {
     }
 
 
-    public static Build createBuildFromWorkspace(String buildUrl, Long number, String status, Boolean isBuilding, String buildDate, Long timestamp, Long duration) {
-        return createBuild(buildUrl, number, status, isBuilding, buildDate, DateUtil.WORKSPACE_DATE_FORMAT, null, timestamp, duration);
+    public static Build createBuildFromWorkspace(String buildUrl, String number, String status, String isBuilding, Long timestamp, Long duration) {
+        return createBuild(buildUrl, Long.parseLong(number), status, Boolean.parseBoolean(isBuilding), null, timestamp, duration);
     }
 
-    public static Build createBuildFromWorkspace(String buildUrl, String number, String status, String isBuilding, String buildDate, Long timestamp, Long duration) {
-        return createBuild(buildUrl, Long.parseLong(number), status, Boolean.parseBoolean(isBuilding), buildDate, DateUtil.WORKSPACE_DATE_FORMAT, null, timestamp, duration);
+    public static Build createBuildFromRss(String buildUrl, String number, String status, String isBuilding, String message) {
+        return createBuild(buildUrl, Long.parseLong(number), status, Boolean.parseBoolean(isBuilding), message, 0L, 0L);
     }
 
-    public static Build createBuildFromRss(String buildUrl, String number, String status, String isBuilding, String buildDate, String message) {
-        return createBuild(buildUrl, Long.parseLong(number), status, Boolean.parseBoolean(isBuilding), buildDate, DateUtil.RSS_DATE_FORMAT, message, 0l, 0l);
-    }
-
-    private static Build createBuild(String buildUrl, Long number, String status, Boolean isBuilding, String buildDate, SimpleDateFormat simpleDateFormat, String message, Long timestamp, Long duration) {
+    private static Build createBuild(String buildUrl, Long number, String status, Boolean isBuilding, String message, Long timestamp, Long duration) {
         BuildStatusEnum buildStatusEnum = BuildStatusEnum.parseStatus(status);
-        Date date = parseDate(buildDate, simpleDateFormat);
-
-        return new Build(buildUrl, number.intValue(), date, buildStatusEnum, isBuilding, message, timestamp, duration);
-    }
-
-    private static Date parseDate(String buildDate) {
-        return DateUtil.parseDate(buildDate, DateUtil.WORKSPACE_DATE_FORMAT);
-    }
-
-    private static Date parseDate(String buildDate, SimpleDateFormat simpleDateFormat) {
-        return parseDate(buildDate, simpleDateFormat);
+        return new Build(buildUrl, number.intValue(), buildStatusEnum, isBuilding, message, timestamp, duration);
     }
 
     public Build() {
@@ -97,8 +79,6 @@ public class Build {
                     String url,
             @JsonProperty(BUILD_NUMBER)
                     int number,
-            @JsonProperty(BUILD_ID)
-                    String buildDate,
             @JsonProperty(BUILD_RESULT)
                     String status,
             @JsonProperty(BUILD_IS_BUILDING)
@@ -107,13 +87,12 @@ public class Build {
                     Long timestamp,
             @JsonProperty(BUILD_DURATION)
                     Long duration) {
-        this(url, number, parseDate(buildDate), BuildStatusEnum.parseStatus(status), isBuilding, null, timestamp, duration);
+        this(url, number, BuildStatusEnum.parseStatus(status), isBuilding, null, timestamp, duration);
     }
 
-    private Build(String url, int number, Date buildDate, BuildStatusEnum status, boolean isBuilding, String message, Long timestamp, Long duration) {
+    private Build(String url, int number, BuildStatusEnum status, boolean isBuilding, String message, Long timestamp, Long duration) {
         this.url = url;
         this.number = number;
-        this.buildDate = buildDate;
         this.status = status;
         this.building = isBuilding;
         this.message = message;
@@ -166,14 +145,6 @@ public class Build {
 
     public void setStatus(String status) {
         this.status = BuildStatusEnum.parseStatus(status);
-    }
-
-    public Date getBuildDate() {
-        return buildDate;
-    }
-
-    public void setBuildDate(String buildDate) {
-        this.buildDate = parseDate(buildDate, DateUtil.WORKSPACE_DATE_FORMAT);
     }
 
     public Date getTimestamp() {

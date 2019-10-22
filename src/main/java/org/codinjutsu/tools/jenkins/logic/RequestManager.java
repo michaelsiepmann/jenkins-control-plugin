@@ -20,6 +20,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.offbytwo.jenkins.JenkinsServer;
+import com.offbytwo.jenkins.model.JobWithDetails;
 import com.offbytwo.jenkins.model.TestChildReport;
 import com.offbytwo.jenkins.model.TestResult;
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +82,9 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public Jenkins loadJenkinsWorkspace(JenkinsAppSettings configuration) {
-        if (handleNotYetLoggedInState()) return null;
+        if (handleNotYetLoggedInState()) {
+            return null;
+        }
         URL url = urlBuilder.createJenkinsWorkspaceUrl(configuration);
         String jenkinsWorkspaceData = securityClient.execute(url);
 
@@ -120,7 +123,9 @@ public class RequestManager implements RequestManagerInterface {
      */
     @Override
     public Map<String, Build> loadJenkinsRssLatestBuilds(JenkinsAppSettings configuration) {
-        if (handleNotYetLoggedInState()) return Collections.emptyMap();
+        if (handleNotYetLoggedInState()) {
+            return Collections.emptyMap();
+        }
         URL url = urlBuilder.createRssLatestUrl(configuration.getServerUrl());
 
         String rssData = securityClient.execute(url);
@@ -152,8 +157,9 @@ public class RequestManager implements RequestManagerInterface {
             threadStack = true;
             result = true;
         }
-        if (threadStack)
+        if (threadStack) {
             Thread.dumpStack();
+        }
         return result;
     }
 
@@ -290,25 +296,32 @@ public class RequestManager implements RequestManagerInterface {
     @Override
     public String loadConsoleTextFor(Job job) {
         try {
-            return jenkinsServer.getJob(job.getName()).getLastCompletedBuild().details().getConsoleOutputText();
+            JobWithDetails jobWithDetails = jenkinsServer.getJob(job.getDisplayName());
+            if (jobWithDetails == null) {
+                return null;
+            }
+            com.offbytwo.jenkins.model.Build lastCompletedBuild = jobWithDetails.getLastCompletedBuild();
+            if (lastCompletedBuild != null) {
+                return lastCompletedBuild.details().getConsoleOutputText();
+            }
         } catch (IOException e) {
             logger.warn("cannot load log for " + job.getName());
-            return null;
         }
+        return null;
     }
 
     @Override
     public List<TestResult> loadTestResultsFor(Job job) {
         try {
             List<TestResult> result = new ArrayList<>();
-            com.offbytwo.jenkins.model.Build lastCompletedBuild = jenkinsServer.getJob(job.getName()).getLastCompletedBuild();
+            com.offbytwo.jenkins.model.Build lastCompletedBuild = jenkinsServer.getJob(job.getDisplayName()).getLastCompletedBuild();
             if (lastCompletedBuild.getTestResult() != null) {
                 result.add(lastCompletedBuild.getTestResult());
             }
             if (lastCompletedBuild.getTestReport().getChildReports() != null) {
                 result.addAll(lastCompletedBuild.getTestReport().getChildReports().stream()
-                        .map(TestChildReport::getResult)
-                        .collect(Collectors.toList()));
+                                                .map(TestChildReport::getResult)
+                                                .collect(Collectors.toList()));
             }
             return result;
         } catch (IOException e) {

@@ -53,6 +53,7 @@ public class JobParameterDefinition {
     private VirtualFile virtualFile;
     private final List<String> values = new LinkedList<>();
 
+    @SuppressWarnings("unused")
     @JsonCreator
     public JobParameterDefinition(
             @JsonProperty(PARAMETER_NAME)

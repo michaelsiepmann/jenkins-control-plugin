@@ -55,6 +55,6 @@ public class BuildTest {
         return Build.createBuildFromRss("http://jenkinsserver/agf-sql/815",
                 buildNumber,
                 SUCCESS.getStatus(),
-                "true", "2011-03-16T14:28:59Z", "a message");
+                "true", "a message");
     }
 }
