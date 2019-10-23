@@ -45,6 +45,7 @@ public class Build {
     private Long duration;
 
     private BuildStatusEnum status;
+    private Job job;
 
     static {
         ICON_BY_BUILD_STATUS_MAP.put(BuildStatusEnum.SUCCESS, GuiUtil.loadIcon("blue.png"));
@@ -177,5 +178,18 @@ public class Build {
 
     public String getMessage() {
         return message;
+    }
+
+    public Job getJob() {
+        return job;
+    }
+
+    public void setJob(Job job) {
+        this.job = job;
+    }
+
+    @NotNull
+    public String getStatusText() {
+        return building ? " (running)" : "";
     }
 }

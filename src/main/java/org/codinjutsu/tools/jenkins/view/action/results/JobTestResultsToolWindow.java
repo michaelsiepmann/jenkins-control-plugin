@@ -37,7 +37,7 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.Build;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,12 +49,13 @@ public class JobTestResultsToolWindow {
     private static final String TOOL_WINDOW_ID = "Job test results";
     private static final Icon ICON = AllIcons.Actions.GroupByTestProduction;
     private final Project project;
-    private Job job;
+    private final Build build;
+    private String tabName;
 
-
-    public JobTestResultsToolWindow(Project project, Job job) {
+    public JobTestResultsToolWindow(Project project, Build build, String tabName) {
         this.project = project;
-        this.job = job;
+        this.tabName = tabName;
+        this.build = build;
     }
 
     public void showMavenToolWindow() {
@@ -69,14 +70,14 @@ public class JobTestResultsToolWindow {
         RunConfiguration configuration = new UnknownRunConfiguration(configurationFactory, project);
         Executor executor = new DefaultRunExecutor();
         ProcessHandler processHandler = new MyProcessHandler();
-        TestConsoleProperties consoleProperties = new JobTestConsoleProperties(job, project, executor, configuration, processHandler);
+        TestConsoleProperties consoleProperties = new JobTestConsoleProperties(build, project, executor, configuration, processHandler);
         BaseTestsOutputConsoleView consoleView;
         try {
             consoleView = SMTestRunnerConnectionUtil.createAndAttachConsole(TOOL_WINDOW_ID, processHandler, consoleProperties);
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
-        showInToolWindow(consoleView, job.getName());
+        showInToolWindow(consoleView, tabName);
         processHandler.startNotify();
     }
 

@@ -62,9 +62,9 @@ public interface JenkinsParser {
 
     Job createJob(String jsonData);
 
-    Build createBuild(String jsonData);
+    Build createBuild(Job job, String jsonData);
 
-    Collection<Build> createBuilds(String jsonData);
+    Collection<Build> createBuilds(Job job, String jsonData);
 
     Collection<Job> createViewJobs(String jsonData);
 

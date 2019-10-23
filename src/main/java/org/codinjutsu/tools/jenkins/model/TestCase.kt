@@ -15,4 +15,6 @@ internal data class TestCase(
         val skipped: Boolean,
         @JsonProperty("duration")
         val duration: Double
-)
+) {
+        fun getDurationInMS() = (duration * 1000).toLong()
+}

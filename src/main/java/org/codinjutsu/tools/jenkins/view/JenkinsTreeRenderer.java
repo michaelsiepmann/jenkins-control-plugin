@@ -20,7 +20,7 @@ import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.RowIcon;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.text.DateFormatUtil;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.codinjutsu.tools.jenkins.JenkinsSettings;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
@@ -93,7 +93,7 @@ public class JenkinsTreeRenderer extends ColoredTreeCellRenderer {
     }
 
     private static String buildLabel(Build build) {
-        String status = getStatus(build);
+        String status = build.getStatusText();
         return String.format("#%d (%s) duration: %s %s", build.getNumber(), DateFormatUtil.formatDateTime(build.getTimestamp()), DurationFormatUtils.formatDurationHMS(build.getDuration()), status);
     }
 
@@ -111,15 +111,7 @@ public class JenkinsTreeRenderer extends ColoredTreeCellRenderer {
         if (job.isInQueue()) {
             return " (in queue)";
         }
-        return getStatus(build);
-    }
-
-    @NotNull
-    private static String getStatus(@NotNull Build build) {
-        if (build.isBuilding()) {
-            return " (running)";
-        }
-        return "";
+        return build.getStatusText();
     }
 
     @NotNull

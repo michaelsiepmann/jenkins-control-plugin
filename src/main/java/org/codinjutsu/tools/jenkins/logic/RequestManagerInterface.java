@@ -43,5 +43,5 @@ public interface RequestManagerInterface {
 
     String loadConsoleTextFor(Job job);
 
-    List<TestResult> loadTestResultsFor(Job job);
+    List<TestResult> loadTestResultsFor(Build lastBuild);
 }

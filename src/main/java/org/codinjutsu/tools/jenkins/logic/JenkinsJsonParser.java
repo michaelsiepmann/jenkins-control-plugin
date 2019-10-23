@@ -98,7 +98,11 @@ public class JenkinsJsonParser implements JenkinsParser {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
         try {
-            return createObjectMapper().readValue(jsonData, Job.class);
+            Job job = createObjectMapper().readValue(jsonData, Job.class);
+            if (job.getLastBuild() != null) {
+                job.getLastBuild().setJob(job);
+            }
+            return job;
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
@@ -107,10 +111,12 @@ public class JenkinsJsonParser implements JenkinsParser {
 
     }
 
-    public Build createBuild(String jsonData) {
+    public Build createBuild(Job job, String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
         try {
-            return createObjectMapper().readValue(jsonData, Build.class);
+            Build build = createObjectMapper().readValue(jsonData, Build.class);
+            build.setJob(job);
+            return build;
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
@@ -119,11 +125,12 @@ public class JenkinsJsonParser implements JenkinsParser {
     }
 
     @Override
-    public Collection<Build> createBuilds(String jsonData) {
+    public Collection<Build> createBuilds(Job job, String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
         try {
-            Builds builds = createObjectMapper().readValue(jsonData, Builds.class);
-            return builds.getBuilds();
+            Collection<Build> builds = createObjectMapper().readValue(jsonData, Builds.class).getBuilds();
+            builds.forEach(build -> build.setJob(job));
+            return builds;
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);

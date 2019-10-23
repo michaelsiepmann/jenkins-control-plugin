@@ -174,22 +174,22 @@ public class RequestManager implements RequestManagerInterface {
         securityClient.execute(url);
     }
 
-    private Build loadBuild(String jenkinsBuildUrl) {
+    private Build loadBuild(Job job, String jenkinsBuildUrl) {
         if (handleNotYetLoggedInState()) {
             return null;
         }
         URL url = urlBuilder.createBuildUrl(jenkinsBuildUrl);
         String jenkinsJobData = securityClient.execute(url);
-        return jsonParser.createBuild(jenkinsJobData);
+        return jsonParser.createBuild(job, jenkinsJobData);
     }
 
-    private Collection<Build> loadBuilds(String jenkinsBuildUrl) {
+    private Collection<Build> loadBuilds(Job job, String jenkinsBuildUrl) {
         if (handleNotYetLoggedInState()) {
             return null;
         }
         URL url = urlBuilder.createBuildsUrl(jenkinsBuildUrl);
         String jenkinsJobData = securityClient.execute(url);
-        return jsonParser.createBuilds(jenkinsJobData);
+        return jsonParser.createBuilds(job, jenkinsJobData);
     }
 
     @Override
@@ -278,12 +278,12 @@ public class RequestManager implements RequestManagerInterface {
 
     @Override
     public Collection<Build> loadBuilds(Job job) {
-        return loadBuilds(job.getUrl());
+        return loadBuilds(job, job.getUrl());
     }
 
     @Override
     public Build loadBuild(Build build) {
-        return loadBuild(build.getUrl());
+        return loadBuild(build.getJob(), build.getUrl());
     }
 
     @Override
@@ -297,8 +297,7 @@ public class RequestManager implements RequestManagerInterface {
     }
 
     @Override
-    public List<TestResult> loadTestResultsFor(@NotNull Job job) {
-        Build lastBuild = job.getLastBuild();
+    public List<TestResult> loadTestResultsFor(Build lastBuild) {
         if (lastBuild == null) {
             return emptyList();
         }

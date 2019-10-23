@@ -63,6 +63,7 @@ import org.codinjutsu.tools.jenkins.view.action.RefreshRssAction;
 import org.codinjutsu.tools.jenkins.view.action.RunBuildAction;
 import org.codinjutsu.tools.jenkins.view.action.SelectViewAction;
 import org.codinjutsu.tools.jenkins.view.action.SetJobAsFavoriteAction;
+import org.codinjutsu.tools.jenkins.view.action.ShowJobResultsAsJUnitViewAction;
 import org.codinjutsu.tools.jenkins.view.action.ShowLogAction;
 import org.codinjutsu.tools.jenkins.view.action.StopBuildAction;
 import org.codinjutsu.tools.jenkins.view.action.UnsetJobAsFavoriteAction;
@@ -432,6 +433,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         popupGroup.add(new RunBuildAction(this));
         popupGroup.add(new StopBuildAction(this));
         popupGroup.add(new ShowLogAction(this));
+        popupGroup.add(new LoadBuildsAction(this));
         popupGroup.addSeparator();
         popupGroup.add(new SetJobAsFavoriteAction(this));
 
@@ -442,6 +444,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         popupGroup.add(new GotoBuildConsolePageAction(this));
         popupGroup.add(new GotoBuildTestResultsPageAction(this));
         popupGroup.add(new GotoLastBuildPageAction(this));
+        popupGroup.add(new ShowJobResultsAsJUnitViewAction(this));
         popupGroup.addSeparator();
         popupGroup.add(new UploadPatchToJob(this));
 

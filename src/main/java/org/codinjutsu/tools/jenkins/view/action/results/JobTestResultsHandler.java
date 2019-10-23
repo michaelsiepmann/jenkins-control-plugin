@@ -16,7 +16,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import jetbrains.buildServer.messages.serviceMessages.TestFailed;
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
-import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.TestCase;
 import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.TestSuites;
@@ -27,12 +27,12 @@ import java.util.List;
 
 class JobTestResultsHandler {
     private static final String CLASS_METHOD_SEPARATOR = ":::";
-    private Job job;
+    private final Build build;
     private final Project project;
     private final GeneralTestEventsProcessor testEventsProcessor;
 
-    JobTestResultsHandler(Job job, Project project, GeneralTestEventsProcessor testEventsProcessor) {
-        this.job = job;
+    JobTestResultsHandler(Build build, Project project, GeneralTestEventsProcessor testEventsProcessor) {
+        this.build = build;
         this.project = project;
         this.testEventsProcessor = testEventsProcessor;
         testEventsProcessor.setLocator((protocol, path, project1, scope) -> {
@@ -55,7 +55,7 @@ class JobTestResultsHandler {
     }
 
     void handle() {
-        List<TestResult> testResults = RequestManager.getInstance(project).loadTestResultsFor(job);
+        List<TestResult> testResults = RequestManager.getInstance(project).loadTestResultsFor(build);
         testResults.forEach(this::handleTestResult);
         testEventsProcessor.onFinishTesting();
     }
@@ -81,7 +81,7 @@ class JobTestResultsHandler {
         } else if (testCase.getErrorDetails() != null) {
             testEventsProcessor.onTestFailure(new TestFailedEvent(new MyTestFailed(testCase), true));
         }
-        testEventsProcessor.onTestFinished(new TestFinishedEvent(testCase.getName(), (long) testCase.getDuration()));
+        testEventsProcessor.onTestFinished(new TestFinishedEvent(testCase.getName(), testCase.getDurationInMS()));
     }
 
     private static PsiClass find(String fqClassname, Project project) {
