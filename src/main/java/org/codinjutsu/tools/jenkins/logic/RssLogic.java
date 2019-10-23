@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RssLogic implements Disposable {
 
-    private final NotificationGroup JENKINS_RSS_GROUP = NotificationGroup.logOnlyGroup("Jenkins Rss");
+    private static final NotificationGroup JENKINS_RSS_GROUP = NotificationGroup.logOnlyGroup("Jenkins Rss");
 
     private final Project project;
     private final JenkinsAppSettings jenkinsAppSettings;
@@ -216,9 +216,5 @@ public class RssLogic implements Disposable {
 
             displayTheFirstFailedBuildInABalloon(getFirstFailedBuild(finishedBuilds));
         }
-
-
     }
-
-
 }
