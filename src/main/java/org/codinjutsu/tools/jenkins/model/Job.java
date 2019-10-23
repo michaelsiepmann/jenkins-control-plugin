@@ -19,7 +19,6 @@ package org.codinjutsu.tools.jenkins.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -209,10 +208,6 @@ public class Job {
         this.displayName = displayName;
     }
 
-    public String getFullName() {
-        return fullName;
-    }
-
     public String getColor() {
         return color;
     }
@@ -261,7 +256,7 @@ public class Job {
         lastBuilds = builds;
     }
 
-    Health getHealth() {
+    private Health getHealth() {
         return health;
     }
 
@@ -284,10 +279,6 @@ public class Job {
 
     public List<JobParameterDefinition> getParameters() {
         return parameters;
-    }
-
-    public String getFullJobPath() {
-        return StringUtils.join(fullName.split("/"), "/job/");
     }
 
     public boolean hasParameter(String name) {

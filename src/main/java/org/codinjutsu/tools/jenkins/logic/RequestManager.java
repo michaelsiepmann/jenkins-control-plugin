@@ -33,6 +33,7 @@ import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
 import org.codinjutsu.tools.jenkins.security.SecurityClient;
 import org.codinjutsu.tools.jenkins.security.SecurityClientFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.SwingUtilities;
 import java.net.URL;
@@ -44,20 +45,16 @@ import java.util.Map;
 
 import static java.util.Collections.emptyList;
 
-public class RequestManager implements RequestManagerInterface {
+public class RequestManager {
 
     private static final Logger logger = Logger.getLogger(RequestManager.class);
 
     private static final String BUILDHIVE_CLOUDBEES = "buildhive";
 
     private UrlBuilder urlBuilder;
-
     private SecurityClient securityClient;
-
     private JenkinsPlateform jenkinsPlateform = JenkinsPlateform.CLASSIC;
-
     private RssParser rssParser = new RssParser();
-
     private JenkinsParser jsonParser = new JenkinsJsonParser();
 
     public static RequestManager getInstance(Project project) {
@@ -74,7 +71,6 @@ public class RequestManager implements RequestManagerInterface {
         this.securityClient = securityClient;
     }
 
-    @Override
     public Jenkins loadJenkinsWorkspace(JenkinsAppSettings configuration) {
         if (handleNotYetLoggedInState()) {
             return null;
@@ -115,7 +111,6 @@ public class RequestManager implements RequestManagerInterface {
      * @param configuration
      * @return
      */
-    @Override
     public Map<String, Build> loadJenkinsRssLatestBuilds(JenkinsAppSettings configuration) {
         if (handleNotYetLoggedInState()) {
             return Collections.emptyMap();
@@ -157,6 +152,7 @@ public class RequestManager implements RequestManagerInterface {
         return result;
     }
 
+    @Nullable
     private Job loadJob(String jenkinsJobUrl) {
         if (handleNotYetLoggedInState()) {
             return null;
@@ -174,6 +170,7 @@ public class RequestManager implements RequestManagerInterface {
         securityClient.execute(url);
     }
 
+    @Nullable
     private Build loadBuild(Job job, String jenkinsBuildUrl) {
         if (handleNotYetLoggedInState()) {
             return null;
@@ -183,6 +180,7 @@ public class RequestManager implements RequestManagerInterface {
         return jsonParser.createBuild(job, jenkinsJobData);
     }
 
+    @Nullable
     private Collection<Build> loadBuilds(Job job, String jenkinsBuildUrl) {
         if (handleNotYetLoggedInState()) {
             return null;
@@ -192,25 +190,21 @@ public class RequestManager implements RequestManagerInterface {
         return jsonParser.createBuilds(job, jenkinsJobData);
     }
 
-    @Override
     public void runBuild(Job job, JenkinsAppSettings configuration, Map<String, VirtualFile> files) {
         if (handleNotYetLoggedInState()) {
             return;
         }
-        if (job.hasParameters()) {
-            if (files.size() > 0) {
-                for (String key : files.keySet()) {
-                    if (!job.hasParameter(key)) {
-                        files.remove(files.get(key));
-                    }
+        if (job.hasParameters() && files.size() > 0) {
+            for (String key : files.keySet()) {
+                if (!job.hasParameter(key)) {
+                    files.remove(files.get(key));
                 }
-                securityClient.setFiles(files);
             }
+            securityClient.setFiles(files);
         }
         runBuild(job, configuration);
     }
 
-    @Override
     public void runBuild(Job job, JenkinsAppSettings configuration) {
         if (handleNotYetLoggedInState()) {
             return;
@@ -219,7 +213,6 @@ public class RequestManager implements RequestManagerInterface {
         securityClient.execute(url);
     }
 
-    @Override
     public void runParameterizedBuild(Job job, JenkinsAppSettings configuration, Map<String, String> paramValueMap) {
         if (handleNotYetLoggedInState()) {
             return;
@@ -228,8 +221,7 @@ public class RequestManager implements RequestManagerInterface {
         securityClient.execute(url);
     }
 
-    @Override
-    public void authenticate(JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) {
+    public void authenticate(JenkinsAppSettings jenkinsAppSettings, @NotNull JenkinsSettings jenkinsSettings) {
         if (jenkinsSettings.isSecurityMode()) {
             securityClient = SecurityClientFactory.basic(jenkinsSettings.getUsername(), jenkinsSettings.getPassword(), jenkinsSettings.getCrumbData(), jenkinsSettings.getVersion());
         } else {
@@ -239,7 +231,6 @@ public class RequestManager implements RequestManagerInterface {
 
     }
 
-    @Override
     public void authenticate(String serverUrl, String username, String password, String crumbData, JenkinsVersion version) {
         if (StringUtils.isNotBlank(username)) {
             securityClient = SecurityClientFactory.basic(username, password, crumbData, version);
@@ -249,7 +240,6 @@ public class RequestManager implements RequestManagerInterface {
         securityClient.connect(urlBuilder.createAuthenticationUrl(serverUrl));
     }
 
-    @Override
     public List<Job> loadFavoriteJobs(List<JenkinsSettings.FavoriteJob> favoriteJobs) {
         if (handleNotYetLoggedInState()) {
             return emptyList();
@@ -261,32 +251,26 @@ public class RequestManager implements RequestManagerInterface {
         return jobs;
     }
 
-    @Override
     public void stopBuild(Build build) {
         stopBuild(build.getUrl());
     }
 
-    @Override
     public Job loadJob(Job job) {
         return loadJob(job.getUrl());
     }
 
-    @Override
     public Collection<Job> loadJenkinsView(View view) {
         return loadJenkinsView(view.getUrl());
     }
 
-    @Override
     public Collection<Build> loadBuilds(Job job) {
         return loadBuilds(job, job.getUrl());
     }
 
-    @Override
     public Build loadBuild(Build build) {
         return loadBuild(build.getJob(), build.getUrl());
     }
 
-    @Override
     public String loadConsoleTextFor(@NotNull Job job) {
         Build lastBuild = job.getLastBuild();
         if (lastBuild == null) {
@@ -296,7 +280,6 @@ public class RequestManager implements RequestManagerInterface {
         return securityClient.execute(url);
     }
 
-    @Override
     public List<TestResult> loadTestResultsFor(Build lastBuild) {
         if (lastBuild == null) {
             return emptyList();

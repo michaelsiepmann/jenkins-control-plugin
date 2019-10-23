@@ -48,8 +48,7 @@ public class RssUtil {
     public static String extractBuildNumber(String rssEntryTitle) {
         Matcher matcher = BUILD_NUMBER_MATCHER.matcher(rssEntryTitle);
         if (matcher.find()) {
-            String foundBuildNumber = matcher.group();
-            return foundBuildNumber.substring(1, foundBuildNumber.length());
+            return matcher.group().substring(1);
         }
         return null;
 

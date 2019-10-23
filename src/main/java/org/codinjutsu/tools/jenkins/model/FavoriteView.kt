@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-package org.codinjutsu.tools.jenkins.model;
+package org.codinjutsu.tools.jenkins.model
 
-
-public class FavoriteView extends View {
-
-
-    private FavoriteView() {
-        super(FAVORITE, null, false);
-    }
-
-    public static FavoriteView create() {
-        return new FavoriteView();
-    }
-}
+object FavoriteView : View(FAVORITE, null, false)

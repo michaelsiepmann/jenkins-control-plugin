@@ -18,13 +18,15 @@ package org.codinjutsu.tools.jenkins.view.validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JTextField;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UrlValidator implements UIValidator<JTextField> {
-    public void validate(JTextField component) throws ConfigurationException {
+    @Override
+    public void validate(@NotNull JTextField component) throws ConfigurationException {
         String value = component.getText();
         if (StringUtils.isEmpty(value)) {
             return;

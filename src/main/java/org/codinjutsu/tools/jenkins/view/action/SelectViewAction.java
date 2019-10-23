@@ -162,7 +162,7 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
         Collection<View> unflattenViews = flatViewList(views);
 
         if (browserPanel.hasFavoriteJobs()) {
-            unflattenViews.add(FavoriteView.create());
+            unflattenViews.add(FavoriteView.INSTANCE);
         }
 
         final JBList<View> viewList = new JBList<>(unflattenViews);

@@ -18,7 +18,6 @@ package org.codinjutsu.tools.jenkins.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.codinjutsu.tools.jenkins.logic.json.ParsedParameterDefinitionDefault;
 
 import java.util.Arrays;
@@ -50,7 +49,6 @@ public class JobParameterDefinition {
     private final String description;
     private final JobParameterType jobParameterType;
     private final String defaultValue;
-    private VirtualFile virtualFile;
     private final List<String> values = new LinkedList<>();
 
     @SuppressWarnings("unused")
@@ -82,20 +80,6 @@ public class JobParameterDefinition {
 
     public static JobParameterDefinition create(String paramName, String paramType, String defaultValue, String... choices) {
         return new JobParameterDefinition(paramName, null, paramType, defaultValue, asList(choices));
-    }
-
-    public static JobParameterDefinition create(String paramName, String paramType, VirtualFile virtualFile) {
-        JobParameterDefinition parameter = create(paramName, paramType, "", "");
-        parameter.setVirtualFile(virtualFile);
-        return parameter;
-    }
-
-    public void setVirtualFile(VirtualFile virtualFile) {
-        this.virtualFile = virtualFile;
-    }
-
-    public VirtualFile getVirtualFile() {
-        return virtualFile;
     }
 
     public String getName() {

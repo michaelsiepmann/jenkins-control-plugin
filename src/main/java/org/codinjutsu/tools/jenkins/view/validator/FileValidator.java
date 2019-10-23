@@ -20,11 +20,13 @@ import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
 public class FileValidator implements UIValidator<LabeledComponent<TextFieldWithBrowseButton>> {
-    public void validate(LabeledComponent<TextFieldWithBrowseButton> component) throws ConfigurationException {
+    @Override
+    public void validate(@NotNull LabeledComponent<TextFieldWithBrowseButton> component) throws ConfigurationException {
         String filepath = component.getComponent().getText();
         if (StringUtils.isEmpty(filepath)) {
             return;

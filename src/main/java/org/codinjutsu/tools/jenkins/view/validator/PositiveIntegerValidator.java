@@ -22,6 +22,7 @@ import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import javax.swing.JTextField;
 
 public class PositiveIntegerValidator implements UIValidator<JTextField> {
+    @Override
     public void validate(JTextField component) throws ConfigurationException {
         String value = component.getText();
         if (component.isEnabled() && StringUtils.isNotEmpty(value)) {    //TODO A revoir

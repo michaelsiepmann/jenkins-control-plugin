@@ -40,35 +40,24 @@ class Jenkins @JvmOverloads constructor(description: String? = null, serverUrl: 
         this.views = LinkedList()
     }
 
-
     fun setJobs(jobs: MutableCollection<Job>) {
         this.jobs = jobs
     }
 
+    fun getJobs(): Collection<Job> = jobs
 
-    fun getJobs(): Collection<Job> {
-        return jobs
-    }
+    fun getJob(name: String) = jobs.firstOrNull { it.name == name }
 
-
-    fun getViews(): Collection<View> {
-        return views
-    }
-
+    fun getViews(): Collection<View> = views
 
     fun setViews(views: MutableCollection<View>) {
         this.views = views
     }
 
-    fun getViewByName(lastSelectedViewName: String): View? {
-        for (view in views) {
-            if (StringUtils.equals(lastSelectedViewName, view.name)) {
-                return view
+    fun getViewByName(lastSelectedViewName: String) =
+            views.firstOrNull {
+                StringUtils.equals(lastSelectedViewName, it.name)
             }
-        }
-
-        return null
-    }
 
     fun update(jenkins: Jenkins) {
         this.name = jenkins.name

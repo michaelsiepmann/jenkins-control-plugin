@@ -159,15 +159,6 @@ public class UrlBuilder {
         return null;
     }
 
-    public URI createServerUrl(String serverUrl) {
-        try {
-            return new URL(serverUrl).toURI();
-        } catch (Exception ex) {
-            handleException(ex);
-        }
-        return null;
-    }
-
     @Nullable
     public URL createCrumbDataUrl(String serverUrl) {
         try {

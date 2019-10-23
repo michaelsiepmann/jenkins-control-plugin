@@ -27,7 +27,6 @@ import com.intellij.openapi.util.IconLoader;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
-import java.net.URL;
 
 public class GuiUtil {
 
@@ -55,7 +54,7 @@ public class GuiUtil {
         }
     }
 
-    public static void runInSwingThread(final Task.Backgroundable task){
+    public static void runInSwingThread(final Task.Backgroundable task) {
         Application application = ApplicationManager.getApplication();
         if (application.isDispatchThread()) {
             task.queue();
@@ -72,7 +71,7 @@ public class GuiUtil {
         }
 
         JComponent actionToolbar = ActionManager.getInstance()
-                .createActionToolbar(toolBarName, actionGroup, true).getComponent();
+                                                .createActionToolbar(toolBarName, actionGroup, true).getComponent();
         toolWindowPanel.setToolbar(actionToolbar);
     }
 
@@ -80,11 +79,7 @@ public class GuiUtil {
         return UIManager.getLookAndFeel().getName().contains("Darcula");
     }
 
-    public static URL getIconResource(String iconFilename) {
-        return GuiUtil.class.getResource(ICON_FOLDER + iconFilename);
-    }
-
-    private static class TaskRunner implements Runnable{
+    private static class TaskRunner implements Runnable {
         private final Task.Backgroundable task;
 
         public TaskRunner(Task.Backgroundable task) {

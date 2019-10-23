@@ -39,7 +39,7 @@ public class JobBuilder {
     }
 
     public JobBuilder health(String healthLevel, String healthDescription) {
-        job.setHealth(Health.createHealth(healthLevel, healthDescription));
+        job.setHealth(Health.Companion.createHealth(healthLevel, healthDescription));
         return this;
     }
 

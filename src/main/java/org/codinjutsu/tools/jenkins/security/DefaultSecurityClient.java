@@ -84,7 +84,7 @@ class DefaultSecurityClient implements SecurityClient {
         this.files = files;
     }
 
-    private PostMethod addFiles(PostMethod post) {
+    private void addFiles(PostMethod post) {
         if (files.size() > 0) {
             List<Part> parts = new ArrayList<>();
             int i = 0;
@@ -98,8 +98,6 @@ class DefaultSecurityClient implements SecurityClient {
             post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[0]), post.getParams()));
             files.clear();
         }
-
-        return post;
     }
 
     private void runMethod(String url, ResponseCollector responseCollector) {
@@ -109,7 +107,7 @@ class DefaultSecurityClient implements SecurityClient {
             post.addRequestHeader(jenkinsVersion.getCrumbName(), crumbData);
         }
 
-        post = addFiles(post);
+        addFiles(post);
 
 
         try {
@@ -123,7 +121,7 @@ class DefaultSecurityClient implements SecurityClient {
 
             int statusCode = httpClient.executeMethod(post);
             final String responseBody;
-            try(InputStream inputStream = post.getResponseBodyAsStream();) {
+            try(InputStream inputStream = post.getResponseBodyAsStream()) {
                 responseBody = IOUtils.toString(inputStream, post.getResponseCharSet());
             }
             checkResponse(statusCode, responseBody);

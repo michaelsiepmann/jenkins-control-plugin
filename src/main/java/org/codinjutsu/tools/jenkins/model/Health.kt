@@ -1,63 +1,37 @@
-package org.codinjutsu.tools.jenkins.model;
+package org.codinjutsu.tools.jenkins.model
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.Nullable;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_HEALTH_DESCRIPTION
+import org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_HEALTH_ICON
 
-import java.util.Arrays;
-import java.util.Collection;
+class Health @JsonCreator
+constructor(
+        @JsonProperty(JOB_HEALTH_ICON)
+        healthLevel: String,
+        @JsonProperty(JOB_HEALTH_DESCRIPTION)
+        var description: String?
+) {
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_HEALTH_DESCRIPTION;
-import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_HEALTH_ICON;
+    var level = getHealthLevel(healthLevel)
 
-public class Health {
+    private fun getHealthLevel(icon: String?) =
+            if (icon?.isNotEmpty() == true) {
+                SUFFIXES.stream()
+                        .filter { icon.endsWith(it) }
+                        .findFirst()
+                        .map { suffix -> icon.substring(0, icon.lastIndexOf(suffix)) }
+                        .orElse(icon)
+            } else {
+                icon
+            }
 
-    private static final Collection<String> SUFFIXES = Arrays.asList(".png", ".gif");
+    companion object {
 
-    private String healthLevel;
-    private String description;
+        private val SUFFIXES = listOf(".png", ".gif")
 
-    @JsonCreator
-    public Health(
-            @JsonProperty(JOB_HEALTH_ICON)
-                    String healthLevel,
-            @JsonProperty(JOB_HEALTH_DESCRIPTION)
-                    String description
-    ) {
-        this.healthLevel = getHealthLevel(healthLevel);
-        this.description = description;
-    }
-
-    public String getLevel() {
-        return healthLevel;
-    }
-
-    public void setLevel(String healthLevel) {
-        this.healthLevel = healthLevel;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public static Health createHealth(String healthLevel, String healthDescription) {
-        return new Health(healthLevel, healthDescription);
-    }
-
-    @Nullable
-    private String getHealthLevel(String icon) {
-        if (isNotEmpty(icon)) {
-            return SUFFIXES.stream()
-                           .filter(icon::endsWith)
-                           .findFirst()
-                           .map(suffix -> icon.substring(0, icon.lastIndexOf(suffix)))
-                           .orElse(icon);
+        fun createHealth(healthLevel: String, healthDescription: String): Health {
+            return Health(healthLevel, healthDescription)
         }
-        return icon;
     }
 }
