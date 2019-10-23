@@ -19,10 +19,6 @@ package org.codinjutsu.tools.jenkins.logic;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.offbytwo.jenkins.JenkinsServer;
-import com.offbytwo.jenkins.model.JobWithDetails;
-import com.offbytwo.jenkins.model.TestChildReport;
-import com.offbytwo.jenkins.model.TestResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
@@ -31,21 +27,20 @@ import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
 import org.codinjutsu.tools.jenkins.security.SecurityClient;
 import org.codinjutsu.tools.jenkins.security.SecurityClientFactory;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.SwingUtilities;
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
@@ -64,7 +59,6 @@ public class RequestManager implements RequestManagerInterface {
     private RssParser rssParser = new RssParser();
 
     private JenkinsParser jsonParser = new JenkinsJsonParser();
-    private JenkinsServer jenkinsServer;
 
     public static RequestManager getInstance(Project project) {
         return ServiceManager.getService(project, RequestManager.class);
@@ -243,7 +237,6 @@ public class RequestManager implements RequestManagerInterface {
         }
         securityClient.connect(urlBuilder.createAuthenticationUrl(jenkinsAppSettings.getServerUrl()));
 
-        jenkinsServer = new JenkinsServer(urlBuilder.createServerUrl(jenkinsAppSettings.getServerUrl()), jenkinsSettings.getUsername(), jenkinsSettings.getPassword());
     }
 
     @Override
@@ -294,39 +287,24 @@ public class RequestManager implements RequestManagerInterface {
     }
 
     @Override
-    public String loadConsoleTextFor(Job job) {
-        try {
-            JobWithDetails jobWithDetails = jenkinsServer.getJob(job.getFullName());
-            if (jobWithDetails == null) {
-                return null;
-            }
-            com.offbytwo.jenkins.model.Build lastCompletedBuild = jobWithDetails.getLastCompletedBuild();
-            if (lastCompletedBuild != null) {
-                return lastCompletedBuild.details().getConsoleOutputText();
-            }
-        } catch (IOException e) {
-            logger.warn("cannot load log for " + job.getName());
+    public String loadConsoleTextFor(@NotNull Job job) {
+        Build lastBuild = job.getLastBuild();
+        if (lastBuild == null) {
+            return null;
         }
-        return null;
+        String url = lastBuild.getUrl() + "/logText/progressiveText";
+        return securityClient.execute(url);
     }
 
     @Override
-    public List<TestResult> loadTestResultsFor(Job job) {
-        try {
-            List<TestResult> result = new ArrayList<>();
-            com.offbytwo.jenkins.model.Build lastCompletedBuild = jenkinsServer.getJob(job.getFullName()).getLastCompletedBuild();
-            if (lastCompletedBuild.getTestResult() != null) {
-                result.add(lastCompletedBuild.getTestResult());
-            }
-            if (lastCompletedBuild.getTestReport().getChildReports() != null) {
-                result.addAll(lastCompletedBuild.getTestReport().getChildReports().stream()
-                                                .map(TestChildReport::getResult)
-                                                .collect(Collectors.toList()));
-            }
-            return result;
-        } catch (IOException e) {
-            logger.warn("cannot load test results for " + job.getName());
+    public List<TestResult> loadTestResultsFor(@NotNull Job job) {
+        Build lastBuild = job.getLastBuild();
+        if (lastBuild == null) {
             return emptyList();
         }
+        String url = lastBuild.getUrl() + "/testReport/api/json";
+        String jsonData = securityClient.execute(url);
+        TestResult testResult = jsonParser.createTestResult(jsonData);
+        return Collections.singletonList(testResult);
     }
 }

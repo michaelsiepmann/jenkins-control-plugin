@@ -19,6 +19,7 @@ package org.codinjutsu.tools.jenkins.logic;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.TestResult;
 
 import java.util.Collection;
 
@@ -68,4 +69,6 @@ public interface JenkinsParser {
     Collection<Job> createViewJobs(String jsonData);
 
     Collection<Job> createCloudbeesViewJobs(String jsonData);
+
+    TestResult createTestResult(String jsonData);
 }

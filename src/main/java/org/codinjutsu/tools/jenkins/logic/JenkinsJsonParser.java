@@ -28,6 +28,7 @@ import org.codinjutsu.tools.jenkins.model.Builds;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.model.Jobs;
+import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.View;
 
 import java.io.IOException;
@@ -123,6 +124,18 @@ public class JenkinsJsonParser implements JenkinsParser {
         try {
             Builds builds = createObjectMapper().readValue(jsonData, Builds.class);
             return builds.getBuilds();
+        } catch (IOException e) {
+            String message = String.format("Error during parsing JSON data : %s", jsonData);
+            LOG.error(message, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public TestResult createTestResult(String jsonData) {
+        checkJsonDataAndThrowExceptionIfNecessary(jsonData);
+        try {
+            return createObjectMapper().readValue(jsonData, TestResult.class);
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);

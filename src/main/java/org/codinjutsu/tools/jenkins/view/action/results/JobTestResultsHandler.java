@@ -13,13 +13,13 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.offbytwo.jenkins.model.TestCase;
-import com.offbytwo.jenkins.model.TestResult;
-import com.offbytwo.jenkins.model.TestSuites;
 import jetbrains.buildServer.messages.serviceMessages.TestFailed;
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.TestCase;
+import org.codinjutsu.tools.jenkins.model.TestResult;
+import org.codinjutsu.tools.jenkins.model.TestSuites;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,7 +76,7 @@ class JobTestResultsHandler {
 
         testEventsProcessor.onTestStarted(new TestStartedEvent(testCase.getName(), "file://" + testCase.getClassName() + CLASS_METHOD_SEPARATOR + testCase.getName()));
 
-        if (testCase.isSkipped()) {
+        if (testCase.getSkipped()) {
             testEventsProcessor.onTestIgnored(new TestIgnoredEvent(testCase.getName(), StringUtils.defaultString(testCase.getErrorDetails()), testCase.getErrorStackTrace()));
         } else if (testCase.getErrorDetails() != null) {
             testEventsProcessor.onTestFailure(new TestFailedEvent(new MyTestFailed(testCase), true));

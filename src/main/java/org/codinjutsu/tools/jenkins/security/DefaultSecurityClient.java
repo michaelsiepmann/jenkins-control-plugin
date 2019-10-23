@@ -64,10 +64,13 @@ class DefaultSecurityClient implements SecurityClient {
     }
 
     public String execute(URL url) {
-        String urlStr = url.toString();
+        return execute(url.toString());
+    }
 
+    @Override
+    public String execute(String url) {
         ResponseCollector responseCollector = new ResponseCollector();
-        runMethod(urlStr, responseCollector);
+        runMethod(url, responseCollector);
 
         if (isRedirection(responseCollector.statusCode)) {
             runMethod(responseCollector.data, responseCollector);

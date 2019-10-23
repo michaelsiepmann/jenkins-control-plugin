@@ -63,19 +63,6 @@ compileKotlin {
 }
 
 dependencies {
-    compile ('com.offbytwo.jenkins:jenkins-client:0.3.8') {
-        exclude group: 'org.slf4j'
-        exclude group: 'org.apache.logging.log4j'
-        exclude group: 'com.google.guava'
-        exclude group: 'com.fasterxml.jackson.core'
-        exclude group: 'commons-collections'
-        exclude group: 'commons-io'
-        exclude group: 'commons-lang'
-        exclude group: 'commons-logging'
-        exclude group: 'jaxen'
-        exclude group: 'org.apache.httpcomponents'
-    }
-
     testCompile 'junit:junit:4.10'
     testCompile 'org.mockito:mockito-all:1.8.5'
     testCompile 'org.easytesting:fest-swing:1.2'
