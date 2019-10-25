@@ -49,17 +49,20 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
     }
 
 
+    @Override
     public void projectOpened() {
 
         JenkinsWindowManager.getInstance(project);
     }
 
 
+    @Override
     public void projectClosed() {
         JenkinsWindowManager.getInstance(project).unregisterMyself();
     }
 
 
+    @Override
     public JComponent createComponent() {
         if (configurationPanel == null) {
             configurationPanel = new ConfigurationPanel(project);
@@ -68,20 +71,24 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
     }
 
 
+    @Override
     public boolean isModified() {
         return configurationPanel != null && configurationPanel.isModified(jenkinsAppSettings, jenkinsSettings);
     }
 
 
+    @Override
     public void disposeUIResources() {
         configurationPanel = null;
     }
 
+    @Override
     public String getHelpTopic() {
         return "preferences.jenkins";
     }
 
 
+    @Override
     public void apply() throws ConfigurationException {
         if (configurationPanel != null) {
             try {
@@ -94,12 +101,14 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
     }
 
 
+    @Override
     @NotNull
     public String getComponentName() {
         return JENKINS_CONTROL_COMPONENT_NAME;
     }
 
 
+    @Override
     @Nls
     public String getDisplayName() {
         return JENKINS_CONTROL_PLUGIN_NAME;
@@ -111,16 +120,19 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
     }
 
 
+    @Override
     public void reset() {
         configurationPanel.loadConfigurationData(jenkinsAppSettings, jenkinsSettings);
     }
 
 
+    @Override
     public void initComponent() {
 
     }
 
 
+    @Override
     public void disposeComponent() {
 
     }

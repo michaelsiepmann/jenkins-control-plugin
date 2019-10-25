@@ -42,23 +42,28 @@ public class ChangesBarProjectComponent implements ProjectComponent, ChangeListD
         this.project = project;
     }
 
+    @Override
     public void initComponent() {
         // TODO: insert component initialization logic here
     }
 
+    @Override
     public void disposeComponent() {
         // TODO: insert component disposal logic here
     }
 
+    @Override
     @NotNull
     public String getComponentName() {
         return "org.codinjutsu.tools.jenkins.ChangesBarProjectComponent";
     }
 
+    @Override
     public void projectOpened() {
         // called when project is opened
     }
 
+    @Override
     public void projectClosed() {
         // called when project is being closed
     }

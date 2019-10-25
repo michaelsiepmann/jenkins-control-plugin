@@ -77,11 +77,13 @@ public class RunBuildAction extends AnAction implements DumbAware {
                     if (job.hasParameters()) {
                         BuildParamDialog.showDialog(job, JenkinsAppSettings.getSafeInstance(project), requestManager, new BuildParamDialog.RunBuildCallback() {
 
+                            @Override
                             public void notifyOnOk(Job job) {
                                 notifyOnGoingMessage(job);
                                 browserPanel.loadJob(job);
                             }
 
+                            @Override
                             public void notifyOnError(Job job, Exception ex) {
                                 browserPanel.notifyErrorJenkinsToolWindow("Build '" + job.getName() + "' cannot be run: " + ex.getMessage());
                                 browserPanel.loadJob(job);

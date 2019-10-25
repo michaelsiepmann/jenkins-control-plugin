@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.SwingUtilities;
 import java.awt.Dimension;
+import java.util.Arrays;
 
 /**
  * CreatePatchAndBuildAction class
@@ -38,24 +39,17 @@ import java.awt.Dimension;
  */
 public class CreatePatchAndBuildAction extends AnAction {
 
-    private Project project;
-    private ChangeList[] selectedChangeLists;
-
+    @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        project = ActionUtil.getProject(event);
-        DataContext dataContext = event.getDataContext();
-
-        selectedChangeLists = VcsDataKeys.CHANGE_LISTS.getData(dataContext);
+        ChangeList[] selectedChangeLists = getChangeLists(event);
         if (selectedChangeLists != null) {
-            showDialog();
+            showDialog(selectedChangeLists, ActionUtil.getProject(event));
         }
     }
 
-    private void showDialog() {
+    private void showDialog(ChangeList[] selectedChangeLists, Project project) {
         SwingUtilities.invokeLater(() -> {
-
             final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
-
             SelectJobDialog dialog = new SelectJobDialog(selectedChangeLists, browserPanel.getJobs(), project);
             dialog.setLocationRelativeTo(null);
             dialog.setMaximumSize(new Dimension(300, 200));
@@ -66,23 +60,23 @@ public class CreatePatchAndBuildAction extends AnAction {
 
     @Override
     public void update(@NotNull AnActionEvent event) {
-        boolean enabled = false;
-        project = ActionUtil.getProject(event);
-        DataContext dataContext = event.getDataContext();
+        event.getPresentation().setEnabled(isEnabled(event));
+    }
 
-        selectedChangeLists = VcsDataKeys.CHANGE_LISTS.getData(dataContext);
-        if (selectedChangeLists != null && (selectedChangeLists.length > 0)) {
+    private ChangeList[] getChangeLists(@NotNull AnActionEvent event) {
+        DataContext dataContext = event.getDataContext();
+        return VcsDataKeys.CHANGE_LISTS.getData(dataContext);
+    }
+
+    private boolean isEnabled(@NotNull AnActionEvent event) {
+        Project project = ActionUtil.getProject(event);
+        ChangeList[] selectedChangeLists = getChangeLists(event);
+        if (selectedChangeLists != null && selectedChangeLists.length > 0) {
             ChangeListManagerEx changeListManager = (ChangeListManagerEx) ChangeListManager.getInstance(project);
             if (!changeListManager.isInUpdate()) {
-                for(ChangeList list: selectedChangeLists) {
-                    if (list.getChanges().size() > 0) {
-                        enabled = true;
-                        break;
-                    }
-                }
+                return Arrays.stream(selectedChangeLists).anyMatch(list -> list.getChanges().size() > 0);
             }
         }
-        event.getPresentation().setEnabled(enabled);
-
+        return false;
     }
 }

@@ -20,6 +20,7 @@ import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.TestCase;
 import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.TestSuites;
+import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,8 +56,13 @@ class JobTestResultsHandler {
     }
 
     void handle() {
-        List<TestResult> testResults = RequestManager.getInstance(project).loadTestResultsFor(build);
-        testResults.forEach(this::handleTestResult);
+        try {
+            List<TestResult> testResults = RequestManager.getInstance(project).loadTestResultsFor(build);
+            testResults.forEach(this::handleTestResult);
+        } catch (Exception e) {
+            BrowserPanel browserPanel = BrowserPanel.getInstance(project);
+            browserPanel.notifyErrorJenkinsToolWindow(e.getMessage());
+        }
         testEventsProcessor.onFinishTesting();
     }
 

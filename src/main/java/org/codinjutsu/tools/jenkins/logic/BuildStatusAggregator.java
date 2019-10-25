@@ -34,21 +34,26 @@ public class BuildStatusAggregator implements BuildStatusVisitor {
         this.nbJobs = nbJobs;
     }
 
+    @Override
     public void visitFailed() {
         nbBrokenBuilds++;
     }
 
+    @Override
     public void visitSuccess() {
         nbSucceededBuilds++;
     }
 
+    @Override
     public void visitUnstable() {
         nbUnstableBuilds++;
     }
 
+    @Override
     public void visitUnknown() {
     }
 
+    @Override
     public void visitAborted() {
         nbAbortedBuilds++;
     }

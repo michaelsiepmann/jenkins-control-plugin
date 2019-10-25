@@ -28,11 +28,12 @@ import com.intellij.openapi.vcs.changes.ChangeList;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.IdeBorderFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
-import org.codinjutsu.tools.jenkins.util.HtmlUtil;
 import org.codinjutsu.tools.jenkins.view.action.UploadPatchToJob;
 
 import javax.swing.DefaultComboBoxModel;
@@ -58,9 +59,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.codinjutsu.tools.jenkins.util.HtmlUtil.createHtmlLinkMessage;
+import static org.codinjutsu.tools.jenkins.view.action.UploadPatchToJob.PARAMETER_NAME;
+
 public class SelectJobDialog extends JDialog {
 
-    private static String FILENAME = "jenkins.diff";
+    private static final String FILENAME = "jenkins.diff";
 
     private static final Logger LOG = Logger.getInstance(UploadPatchToJob.class.getName());
 
@@ -102,6 +106,7 @@ public class SelectJobDialog extends JDialog {
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent e) {
                 onCancel();
             }
@@ -113,13 +118,9 @@ public class SelectJobDialog extends JDialog {
 
     private void fillJobList(Collection<Job> jobs) {
         if (null != jobs) {
-            if (!jobs.isEmpty()) {
-                for (Job job : jobs) {
-                    if (job.hasParameters() && job.hasParameter(UploadPatchToJob.PARAMETER_NAME)) {
-                        listModel.addElement(job.getName());
-                    }
-                }
-            }
+            jobs.stream()
+                .filter(job -> job.hasParameters() && job.hasParameter(PARAMETER_NAME))
+                .forEach(job -> listModel.addElement(job.getName()));
         }
 
         jobsList.setModel(listModel);
@@ -156,7 +157,7 @@ public class SelectJobDialog extends JDialog {
         changedFilesList.setModel(model);
     }
 
-    private boolean createPatch() throws IOException, VcsException {
+    private void createPatch() throws IOException, VcsException {
         FileWriter writer = new FileWriter(FILENAME);
         Collection<Change> changes = new ArrayList<>();
         if (changeLists.length > 0) {
@@ -164,11 +165,9 @@ public class SelectJobDialog extends JDialog {
                 changes.addAll(changeList.getChanges());
             }
         }
-        List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(project, changes, project.getBaseDir().getPresentableUrl(), false);
+        List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(project, changes, project.getBasePath(), false);
         UnifiedDiffWriter.write(project, patches, writer, CodeStyle.getSettings(project).getLineSeparator(), null);
         writer.close();
-
-        return true;
     }
 
     private void watchJob(BrowserPanel browserPanel, Job job) {
@@ -182,42 +181,37 @@ public class SelectJobDialog extends JDialog {
     private void onOK() {
         BrowserPanel browserPanel = BrowserPanel.getInstance(project);
         try {
-            if (createPatch()) {
-                RequestManager requestManager = browserPanel.getJenkinsManager();
-                String selectedJobName = (String) jobsList.getSelectedItem();
-                if (selectedJobName != null && !selectedJobName.isEmpty()) {
-                    Job selectedJob = browserPanel.getJob(selectedJobName);
-                    if (selectedJob != null) {
-                        if (selectedJob.hasParameters()) {
-                            if (selectedJob.hasParameter(UploadPatchToJob.PARAMETER_NAME)) {
-                                JenkinsAppSettings settings = JenkinsAppSettings.getSafeInstance(project);
-                                Map<String, VirtualFile> files = new HashMap<>();
-                                VirtualFile virtualFile = UploadPatchToJob.prepareFile(browserPanel, LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(FILENAME)), settings, selectedJob);
-                                if (virtualFile != null && virtualFile.exists()) {
-                                    files.put(UploadPatchToJob.PARAMETER_NAME, virtualFile);
-                                    requestManager.runBuild(selectedJob, settings, files);
-                                    //browserPanel.loadSelectedJob();
-                                    browserPanel.notifyInfoJenkinsToolWindow(HtmlUtil.createHtmlLinkMessage(
-                                            selectedJob.getName() + " build is on going",
-                                            selectedJob.getUrl())
-                                    );
-
-                                    watchJob(browserPanel, selectedJob);
-
-                                } else {
-                                    throw new ConfigurationException(String.format("File \"%s\" not found", virtualFile.getPath()));
-                                }
-                            } else {
-                                throw new ConfigurationException(String.format("Job \"%s\" should has parameter with name \"%s\"", selectedJob.getName(), UploadPatchToJob.PARAMETER_NAME));
-                            }
-                        } else {
-                            throw new ConfigurationException(String.format("Job \"%s\" has no parameters", selectedJob.getName()));
-                        }
-                    }
-                }
+            createPatch();
+            RequestManager requestManager = browserPanel.getJenkinsManager();
+            String selectedJobName = (String) jobsList.getSelectedItem();
+            if (StringUtils.isEmpty(selectedJobName)) {
+                return;
             }
+            Job selectedJob = browserPanel.getJob(selectedJobName);
+            if (selectedJob == null) {
+                return;
+            }
+            if (!selectedJob.hasParameters()) {
+                throw new ConfigurationException(String.format("Job \"%s\" has no parameters", selectedJob.getName()));
+            }
+            if (!selectedJob.hasParameter(PARAMETER_NAME)) {
+                throw new ConfigurationException(String.format("Job \"%s\" should have parameter with name \"%s\"", selectedJob.getName(), PARAMETER_NAME));
+            }
+            JenkinsAppSettings settings = JenkinsAppSettings.getSafeInstance(project);
+            Map<String, VirtualFile> files = new HashMap<>();
+            VirtualFile virtualFile = UploadPatchToJob.prepareFile(browserPanel, LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(FILENAME)), settings, selectedJob);
+            if (virtualFile == null || !virtualFile.exists()) {
+                throw new ConfigurationException(String.format("File \"%s\" not found", virtualFile != null ? virtualFile.getPath() : FILENAME));
+            }
+            files.put(PARAMETER_NAME, virtualFile);
+            requestManager.runBuild(selectedJob, settings, files);
+            //browserPanel.loadSelectedJob();
+            browserPanel.notifyInfoJenkinsToolWindow(createHtmlLinkMessage(
+                    selectedJob.getName() + " build is on going",
+                    selectedJob.getUrl())
+            );
+            watchJob(browserPanel, selectedJob);
         } catch (Exception e) {
-            e.printStackTrace();
             String message = String.format("Build cannot be run: %s", e.getMessage());
             LOG.info(message);
             browserPanel.notifyErrorJenkinsToolWindow(message);
@@ -231,7 +225,7 @@ public class SelectJobDialog extends JDialog {
 
     private void deletePatchFile() {
         File file = new File(FILENAME);
-        file.delete();
+        FileUtils.deleteQuietly(file);
     }
 
     private void onCancel() {

@@ -25,6 +25,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
+import org.jetbrains.annotations.NotNull;
 
 @State(
         name = "Jenkins.Application.Settings",
@@ -36,12 +37,13 @@ import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
 public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSettings.State> {
 
     public static final String DUMMY_JENKINS_SERVER_URL = "http://dummyjenkinsserver";
-    public static final int DEFAULT_BUILD_DELAY = 0;
-    public static final int RESET_PERIOD_VALUE = 0;
+    private static final int DEFAULT_BUILD_DELAY = 0;
+    private static final int RESET_PERIOD_VALUE = 0;
 
     private State myState = new State();
 
-    public static JenkinsAppSettings getSafeInstance(Project project) {
+    @NotNull
+    public static JenkinsAppSettings getSafeInstance(@NotNull Project project) {
         JenkinsAppSettings settings = ServiceManager.getService(project, JenkinsAppSettings.class);
         return settings != null ? settings : new JenkinsAppSettings();
     }
@@ -52,7 +54,7 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
     }
 
     @Override
-    public void loadState(State state) {
+    public void loadState(@NotNull State state) {
         XmlSerializerUtil.copyBean(state, myState);
     }
 
@@ -66,11 +68,9 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         myState.serverUrl = serverUrl;
     }
 
-
     public boolean isServerUrlSet() {
         return StringUtils.isNotEmpty(myState.serverUrl) && !DUMMY_JENKINS_SERVER_URL.equals(myState.serverUrl);
     }
-
 
     public int getBuildDelay() {
         return myState.delay;
@@ -132,19 +132,20 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         myState.rssSettings.displayAborted = displayAborted;
     }
 
-    public boolean shouldDisplayOnLogEvent(Build build) {
+    public boolean shouldDisplayOnLogEvent(@NotNull Build build) {
         BuildStatusEnum buildStatus = build.getStatus();
-        if (BuildStatusEnum.SUCCESS.equals(buildStatus) || BuildStatusEnum.STABLE.equals(buildStatus)) {
-            return shouldDisplaySuccessOrStable();
+        switch (buildStatus) {
+            case SUCCESS:
+            case STABLE:
+                return shouldDisplaySuccessOrStable();
+            case FAILURE:
+            case UNSTABLE:
+                return shouldDisplayFailOrUnstable();
+            case ABORTED:
+                return shouldDisplayAborted();
+            default:
+                return false;
         }
-        if (BuildStatusEnum.FAILURE.equals(buildStatus) || BuildStatusEnum.UNSTABLE.equals(buildStatus)) {
-            return shouldDisplayFailOrUnstable();
-        }
-        if (BuildStatusEnum.ABORTED.equals(buildStatus)) {
-            return shouldDisplayAborted();
-        }
-
-        return false;
     }
 
     public int getNumBuildRetries() {
@@ -155,6 +156,7 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         myState.numBuildRetries = numBuildRetries;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static class State {
 
         public String serverUrl = DUMMY_JENKINS_SERVER_URL;
@@ -166,6 +168,7 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         public RssSettings rssSettings = new RssSettings();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static class RssSettings {
         public boolean displaySuccessOrStable = true;
         public boolean displayUnstableOrFail = true;

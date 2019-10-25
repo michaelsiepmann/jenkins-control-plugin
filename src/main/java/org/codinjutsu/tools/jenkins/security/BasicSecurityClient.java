@@ -43,6 +43,7 @@ class BasicSecurityClient extends DefaultSecurityClient {
     }
 
 
+    @Override
     public void connect(URL url) {
         doAuthentication(url);
     }

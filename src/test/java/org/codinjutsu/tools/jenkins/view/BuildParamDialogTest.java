@@ -96,6 +96,7 @@ public class BuildParamDialogTest {
 
     private void createDialog(final Job job) {
         BuildParamDialog buildParamDialog = GuiActionRunner.execute(new GuiQuery<BuildParamDialog>() {
+            @Override
             protected BuildParamDialog executeInEDT() {
                 return new BuildParamDialog(job, configuration, requestManager, callbackRun);
             }

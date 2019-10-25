@@ -20,6 +20,7 @@ import com.intellij.util.ui.UIUtil;
 import org.codinjutsu.tools.jenkins.logic.BuildStatusAggregator;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -31,7 +32,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 
 public class BuildStatusIcon extends JComponent {
-
 
     private static final int PIXEL_WIDTH = 8;
 
@@ -70,14 +70,17 @@ public class BuildStatusIcon extends JComponent {
 
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
 
+    @Override
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
 
+    @Override
     public Dimension getPreferredSize() {
         final Insets insets = getInsets();
         return new Dimension(
@@ -86,6 +89,7 @@ public class BuildStatusIcon extends JComponent {
         );
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
 
         g.setColor(UIUtil.getPanelBackground());
@@ -113,11 +117,12 @@ public class BuildStatusIcon extends JComponent {
     }
 
 
-    private void paintIcon(Graphics g, Icon icon, int x, int y) {
+    private void paintIcon(Graphics g, @NotNull Icon icon, int x, int y) {
         icon.paintIcon(this, g, x, y);
     }
 
 
+    @NotNull
     private Font calcFont() {
         return getFont().deriveFont(Font.BOLD).deriveFont((float) icon.getIconHeight() * 3 / 5);
     }

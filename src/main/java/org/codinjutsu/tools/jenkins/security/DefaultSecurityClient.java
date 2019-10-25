@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.model.VirtualFilePartSource;
 import org.codinjutsu.tools.jenkins.util.IOUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +64,8 @@ class DefaultSecurityClient implements SecurityClient {
         execute(jenkinsUrl);
     }
 
-    public String execute(URL url) {
+    @Override
+    public String execute(@NotNull URL url) {
         return execute(url.toString());
     }
 
