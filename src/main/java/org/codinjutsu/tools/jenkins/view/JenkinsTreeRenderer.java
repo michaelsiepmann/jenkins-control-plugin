@@ -24,7 +24,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.codinjutsu.tools.jenkins.JenkinsSettings;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
-import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,6 +36,7 @@ import java.util.List;
 import static com.intellij.ui.SimpleTextAttributes.REGULAR_ATTRIBUTES;
 import static com.intellij.ui.SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES;
 import static com.intellij.ui.SimpleTextAttributes.REGULAR_ITALIC_ATTRIBUTES;
+import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public class JenkinsTreeRenderer extends ColoredTreeCellRenderer {
 
@@ -60,8 +61,8 @@ public class JenkinsTreeRenderer extends ColoredTreeCellRenderer {
             setToolTipText(jenkins.getServerUrl());
             setIcon(SERVER_ICON);
 
-        } else if (userObject instanceof Job) {
-            Job job = (Job) userObject;
+        } else if (userObject instanceof ViewElement) {
+            ViewElement job = (ViewElement) userObject;
 
             append(buildLabel(job), getAttribute(job));
 
@@ -78,12 +79,13 @@ public class JenkinsTreeRenderer extends ColoredTreeCellRenderer {
         }
     }
 
-    private boolean isFavoriteJob(Job job) {
-        String jobName = job.getName();
+    private boolean isFavoriteJob(ViewElement job) {
+        String jobName = job.getJobName();
         return favoriteJobs.stream().anyMatch(favoriteJob -> favoriteJob.name.equals(jobName));
     }
 
-    private static SimpleTextAttributes getAttribute(@NotNull Job job) {
+    @NotNull
+    private static SimpleTextAttributes getAttribute(@NotNull ViewElement job) {
         Build build = job.getLastBuild();
         if (build != null && (job.isInQueue() || build.isBuilding())) {
             return REGULAR_BOLD_ATTRIBUTES;
@@ -97,17 +99,17 @@ public class JenkinsTreeRenderer extends ColoredTreeCellRenderer {
         return String.format("#%d (%s) duration: %s %s", build.getNumber(), DateFormatUtil.formatDateTime(build.getTimestamp()), DurationFormatUtils.formatDurationHMS(build.getDuration()), status);
     }
 
-
-    private static String buildLabel(@NotNull Job job) {
+    @NotNull
+    private static String buildLabel(@NotNull ViewElement job) {
         Build build = job.getLastBuild();
         if (build == null) {
-            return job.getName();
+            return defaultString(job.getJobName());
         }
-        return String.format("%s #%s%s", job.getName(), build.getNumber(), getStatus(job, build));
+        return String.format("%s #%s%s", job.getJobName(), build.getNumber(), getStatus(job, build));
     }
 
     @NotNull
-    private static String getStatus(@NotNull Job job, Build build) {
+    private static String getStatus(@NotNull ViewElement job, Build build) {
         if (job.isInQueue()) {
             return " (in queue)";
         }

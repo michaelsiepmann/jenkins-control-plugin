@@ -92,6 +92,7 @@ public class ConfigurationPanel {
     private JRadioButton version1RadioButton;
     private JRadioButton version2RadioButton;
     private JButton openCrumbDataURLButton;
+    private JTextField fixedURL;
 
     private final FormValidator formValidator;
 
@@ -100,6 +101,7 @@ public class ConfigurationPanel {
     public ConfigurationPanel(final Project project) {
 
         serverUrl.setName("serverUrl");
+        fixedURL.setName("fixedURL");
         buildDelay.setName("buildDelay");
         jobRefreshPeriod.setName("jobRefreshPeriod");
         rssRefreshPeriod.setName("rssRefreshPeriod");
@@ -213,13 +215,15 @@ public class ConfigurationPanel {
                 || abortedCheckBox.isSelected() != jenkinsAppSettings.shouldDisplayAborted();
 
         return !jenkinsAppSettings.getServerUrl().equals(serverUrl.getText())
-                || !(jenkinsAppSettings.getBuildDelay() == getBuildDelay())
-                || !(jenkinsAppSettings.getJobRefreshPeriod() == getJobRefreshPeriod())
-                || !(jenkinsAppSettings.getRssRefreshPeriod() == getRssRefreshPeriod())
-                || !(jenkinsAppSettings.getNumBuildRetries() == getNumBuildRetries())
-                || !(jenkinsSettings.getCrumbData().equals(crumbDataField.getText()))
+                || !jenkinsAppSettings.getFixedURL().equals(getFixedURL())
+                || jenkinsAppSettings.getBuildDelay() != getBuildDelay()
+                || jenkinsAppSettings.getJobRefreshPeriod() != getJobRefreshPeriod()
+                || jenkinsAppSettings.getRssRefreshPeriod() != getRssRefreshPeriod()
+                || jenkinsAppSettings.getNumBuildRetries() != getNumBuildRetries()
+                || !jenkinsSettings.getCrumbData().equals(crumbDataField.getText())
                 || credentialModified
-                || statusToIgnoreModified || (!jenkinsAppSettings.getSuffix().equals(replaceWithSuffix.getText()));
+                || statusToIgnoreModified
+                || !jenkinsAppSettings.getSuffix().equals(replaceWithSuffix.getText());
     }
 
     //TODO use annotation to create a guiwrapper so isModified could be simplified
@@ -232,6 +236,7 @@ public class ConfigurationPanel {
         }
 
         jenkinsAppSettings.setServerUrl(serverUrl.getText());
+        jenkinsAppSettings.setFixedURL(getFixedURL());
         jenkinsAppSettings.setDelay(getBuildDelay());
         jenkinsAppSettings.setJobRefreshPeriod(getJobRefreshPeriod());
         jenkinsAppSettings.setRssRefreshPeriod(getRssRefreshPeriod());
@@ -263,6 +268,7 @@ public class ConfigurationPanel {
 
     public void loadConfigurationData(JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) {
         serverUrl.setText(jenkinsAppSettings.getServerUrl());
+        fixedURL.setText(jenkinsAppSettings.getFixedURL());
         buildDelay.setText(String.valueOf(jenkinsAppSettings.getBuildDelay()));
 
         jobRefreshPeriod.setText(String.valueOf(jenkinsAppSettings.getJobRefreshPeriod()));
@@ -350,6 +356,10 @@ public class ConfigurationPanel {
             return Integer.parseInt(delay);
         }
         return 0;
+    }
+
+    private String getFixedURL() {
+        return fixedURL.getText();
     }
 
     public JPanel getRootPanel() {

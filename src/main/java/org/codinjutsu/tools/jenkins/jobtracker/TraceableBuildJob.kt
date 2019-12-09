@@ -32,7 +32,7 @@ class TraceableBuildJob internal constructor(private val job: Job, numTries: Int
 
     private fun buildBelongsToThisJob(build: Build): Boolean {
         return build.url
-                .contains(job.url)
+                .contains(job.url ?: "")
     }
 
     override fun equals(other: Any?): Boolean {

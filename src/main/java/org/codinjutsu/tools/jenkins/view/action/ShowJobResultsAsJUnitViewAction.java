@@ -9,6 +9,7 @@ import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.codinjutsu.tools.jenkins.view.action.results.JobTestResultsToolWindow;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
 
@@ -23,23 +24,23 @@ public class ShowJobResultsAsJUnitViewAction extends AnAction {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getData(PlatformDataKeys.PROJECT);
         Job job = browserPanel.getSelectedJob();
         if (job == null) {
             Build selectedBuild = browserPanel.getSelectedBuild();
             new JobTestResultsToolWindow(project, selectedBuild, buildLabel(selectedBuild)).showMavenToolWindow();
         } else {
-            new JobTestResultsToolWindow(project, job.getLastBuild(), job.getName()).showMavenToolWindow();
+            new JobTestResultsToolWindow(project, job.getLastBuild(), job.getJobName()).showMavenToolWindow();
         }
     }
 
-    private String buildLabel(Build build) {
-        return String.format("%s #%d", build.getJob().getName(), build.getNumber());
+    private String buildLabel(@NotNull Build build) {
+        return String.format("%s #%d", build.getJob().getJobName(), build.getNumber());
     }
 
     @Override
-    public void update(AnActionEvent event) {
+    public void update(@NotNull AnActionEvent event) {
         Build selectedBuild = browserPanel.getSelectedBuild();
         if (selectedBuild != null) {
             event.getPresentation().setVisible(true);

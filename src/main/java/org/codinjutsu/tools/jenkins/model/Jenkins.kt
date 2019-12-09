@@ -28,7 +28,7 @@ class Jenkins @JvmOverloads constructor(description: String? = null, serverUrl: 
     var serverUrl: String? = null
         private set
 
-    private var jobs: MutableCollection<Job> = mutableListOf()
+    private var jobs: MutableCollection<ViewElement> = mutableListOf()
 
     private var views: MutableCollection<View> = mutableListOf()
     var primaryView: View? = null
@@ -40,13 +40,13 @@ class Jenkins @JvmOverloads constructor(description: String? = null, serverUrl: 
         this.views = LinkedList()
     }
 
-    fun setJobs(jobs: MutableCollection<Job>) {
-        this.jobs = jobs
+    fun setJobs(views: MutableCollection<ViewElement>) {
+        this.jobs = views
     }
 
-    fun getJobs(): Collection<Job> = jobs
+    fun getJobs(): Collection<ViewElement> = jobs
 
-    fun getJob(name: String) = jobs.firstOrNull { it.name == name }
+    fun getJob(name: String) = jobs.firstOrNull { it.getJobName() == name }
 
     fun getViews(): Collection<View> = views
 

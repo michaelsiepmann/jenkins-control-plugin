@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.collections.CollectionUtils;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Icon;
@@ -44,15 +45,9 @@ import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_NAME;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.JOB_URL;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.PARAMETER_PROPERTY;
 
-public class Job {
+public class Job extends ViewElement {
 
-    private static final Map<String, Icon> ICON_BY_JOB_HEALTH_MAP = new HashMap<>();
-    private String name;
-
-    private String displayName;
-    private String fullDisplayName;
-    private String fullName;
-    private String url;
+    static final Map<String, Icon> ICON_BY_JOB_HEALTH_MAP = new HashMap<>();
 
     private String color;
     private boolean inQueue;
@@ -103,7 +98,8 @@ public class Job {
         return result;
     }
 
-    public Job() {
+    public Job(String name, String displayName, String fullDisplayName, String fullName, String url) {
+        super(name, displayName, fullDisplayName, fullName, url);
     }
 
     @JsonCreator
@@ -131,33 +127,32 @@ public class Job {
             @JsonProperty(PARAMETER_PROPERTY)
                     Collection<JobParameter> parameters
     ) {
-        this(name, displayName, color, url, inQueue, buildable);
-        this.fullDisplayName = fullDisplayName;
-        this.fullName = fullName;
+        this(name, displayName, color, url, inQueue, buildable, fullDisplayName, fullName);
         this.lastBuild = lastBuild;
         this.health = getHealth(healths);
         this.parameters.addAll(getParameterDefinitions(parameters));
     }
 
-    private Job(String name, String displayName, String color, String url, Boolean inQueue, Boolean buildable) {
-        this.name = name;
-        this.displayName = displayName;
+    private Job(String name, String displayName, String color, String url, Boolean inQueue, Boolean buildable, String fullDisplayName, String fullName) {
+        super(name, displayName, fullDisplayName, fullName, url);
         this.color = color;
-        this.url = url;
         this.inQueue = inQueue != null && inQueue;
         this.buildable = buildable != null && buildable;
     }
 
 
     public static Job createJob(String jobName, String displayName, String jobColor, String jobUrl, String inQueue, String buildable) {
-        return new Job(jobName, displayName, jobColor, jobUrl, Boolean.valueOf(inQueue), Boolean.valueOf(buildable));
+        return new Job(jobName, displayName, jobColor, jobUrl, Boolean.valueOf(inQueue), Boolean.valueOf(buildable), "", "");
     }
 
-
+    @NotNull
+    @Override
     public Icon getStateIcon() {
         return Build.getStateIcon(color);
     }
 
+    @NotNull
+    @Override
     public Icon getHealthIcon() {
         if (health == null) {
             return ICON_BY_JOB_HEALTH_MAP.get("null");
@@ -165,6 +160,8 @@ public class Job {
         return ICON_BY_JOB_HEALTH_MAP.get(health.getLevel());
     }
 
+    @Nullable
+    @Override
     public String findHealthDescription() {
         if (health == null) {
             return "";
@@ -173,7 +170,8 @@ public class Job {
     }
 
 
-    public void updateContentWith(Job updatedJob) {
+    @Override
+    public void updateContentWith(@NotNull Job updatedJob) {
         this.color = updatedJob.getColor();
         this.health = updatedJob.getHealth();
         this.inQueue = updatedJob.isInQueue();
@@ -186,28 +184,7 @@ public class Job {
         parameters.add(JobParameterDefinition.create(paramName, paramType, defaultValue, choices));
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        if (isNotEmpty(fullDisplayName)) {
-            return fullDisplayName;
-        }
-        if (isNotEmpty(displayName)) {
-            return displayName;
-        }
-        return name;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
+    @Override
     public String getColor() {
         return color;
     }
@@ -216,14 +193,7 @@ public class Job {
         this.color = color;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
+    @Override
     public boolean isInQueue() {
         return inQueue;
     }
@@ -232,6 +202,7 @@ public class Job {
         this.inQueue = inQueue;
     }
 
+    @Override
     public boolean isBuildable() {
         return buildable;
     }
@@ -240,14 +211,17 @@ public class Job {
         this.buildable = buildable;
     }
 
+    @Override
     public Build getLastBuild() {
         return lastBuild;
     }
 
-    public void setLastBuild(Build lastBuild) {
+    @Override
+    public void setLastBuild(@Nullable Build lastBuild) {
         this.lastBuild = lastBuild;
     }
 
+    @Override
     public Collection<Build> getLastBuilds() {
         return lastBuilds;
     }
@@ -264,6 +238,7 @@ public class Job {
         this.health = health;
     }
 
+    @Override
     public boolean hasParameters() {
         return !parameters.isEmpty();
     }
@@ -272,6 +247,7 @@ public class Job {
         this.fetchBuild = fetchBuild;
     }
 
+    @Override
     public boolean isFetchBuild() {
         return fetchBuild;
     }
@@ -281,6 +257,7 @@ public class Job {
         return parameters;
     }
 
+    @Override
     public boolean hasParameter(String name) {
         if (hasParameters()) {
             for (JobParameterDefinition parameter : parameters) {
@@ -295,7 +272,7 @@ public class Job {
     @Override
     public String toString() {
         return "Job{" +
-                "name='" + name + '\'' +
+                "name='" + getName() + '\'' +
                 '}';
     }
 }

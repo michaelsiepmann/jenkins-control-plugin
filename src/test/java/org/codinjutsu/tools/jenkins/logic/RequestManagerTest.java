@@ -52,7 +52,7 @@ public class RequestManagerTest {
         URL urlFromJenkins = new URL("http://myjenkins:8082");
         when(urlBuilderMock.createJenkinsWorkspaceUrl(configuration))
                 .thenReturn(urlFromConf);
-        when(urlBuilderMock.createViewUrl(any(JenkinsPlateform.class), anyString()))
+        when(urlBuilderMock.createViewUrl(any(JenkinsAppSettings.class), any(JenkinsPlateform.class), anyString()))
                 .thenReturn(urlFromJenkins);
         when(securityClientMock.execute(urlFromConf))
                 .thenReturn(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadJenkinsWorkspaceWithIncorrectPortInTheResponse.json")));
@@ -71,7 +71,7 @@ public class RequestManagerTest {
         URL urlFromJenkins = new URL("http://anotherjenkins:8080");
         when(urlBuilderMock.createJenkinsWorkspaceUrl(configuration))
                 .thenReturn(urlFromConf);
-        when(urlBuilderMock.createViewUrl(any(JenkinsPlateform.class), anyString()))
+        when(urlBuilderMock.createViewUrl(any(JenkinsAppSettings.class), any(JenkinsPlateform.class), anyString()))
                 .thenReturn(urlFromJenkins);
         when(securityClientMock.execute(urlFromConf))
                 .thenReturn(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadJenkinsWorkspaceWithIncorrectPortInTheResponse.json")));

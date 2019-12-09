@@ -19,7 +19,9 @@ package org.codinjutsu.tools.jenkins.logic;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.model.TestResult;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -66,9 +68,10 @@ public interface JenkinsParser {
 
     Collection<Build> createBuilds(Job job, String jsonData);
 
-    Collection<Job> createViewJobs(String jsonData);
+    @NotNull
+    Collection<ViewElement> createViewJobs(String jsonData);
 
-    Collection<Job> createCloudbeesViewJobs(String jsonData);
+    Collection<ViewElement> createCloudbeesViewJobs(String jsonData);
 
     TestResult createTestResult(String jsonData);
 }

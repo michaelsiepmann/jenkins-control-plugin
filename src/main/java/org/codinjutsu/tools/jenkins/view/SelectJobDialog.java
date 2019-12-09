@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
-import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.view.action.UploadPatchToJob;
 
 import javax.swing.DefaultComboBoxModel;
@@ -81,7 +81,7 @@ public class SelectJobDialog extends JDialog {
 
     private ChangeList[] changeLists;
 
-    public SelectJobDialog(ChangeList[] changeLists, Collection<Job> jobs, Project project) {
+    public SelectJobDialog(ChangeList[] changeLists, Collection<ViewElement> jobs, Project project) {
 
         this.project = project;
 
@@ -116,11 +116,11 @@ public class SelectJobDialog extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private void fillJobList(Collection<Job> jobs) {
+    private void fillJobList(Collection<ViewElement> jobs) {
         if (null != jobs) {
             jobs.stream()
                 .filter(job -> job.hasParameters() && job.hasParameter(PARAMETER_NAME))
-                .forEach(job -> listModel.addElement(job.getName()));
+                .forEach(job -> listModel.addElement(job.getJobName()));
         }
 
         jobsList.setModel(listModel);
@@ -170,7 +170,7 @@ public class SelectJobDialog extends JDialog {
         writer.close();
     }
 
-    private void watchJob(BrowserPanel browserPanel, Job job) {
+    private void watchJob(BrowserPanel browserPanel, ViewElement job) {
         if (changeLists.length > 0) {
             for (ChangeList list : changeLists) {
                 browserPanel.addToWatch(list.getName(), job);
@@ -187,15 +187,15 @@ public class SelectJobDialog extends JDialog {
             if (StringUtils.isEmpty(selectedJobName)) {
                 return;
             }
-            Job selectedJob = browserPanel.getJob(selectedJobName);
+            ViewElement selectedJob = browserPanel.getJob(selectedJobName);
             if (selectedJob == null) {
                 return;
             }
             if (!selectedJob.hasParameters()) {
-                throw new ConfigurationException(String.format("Job \"%s\" has no parameters", selectedJob.getName()));
+                throw new ConfigurationException(String.format("Job \"%s\" has no parameters", selectedJob.getJobName()));
             }
             if (!selectedJob.hasParameter(PARAMETER_NAME)) {
-                throw new ConfigurationException(String.format("Job \"%s\" should have parameter with name \"%s\"", selectedJob.getName(), PARAMETER_NAME));
+                throw new ConfigurationException(String.format("Job \"%s\" should have parameter with name \"%s\"", selectedJob.getJobName(), PARAMETER_NAME));
             }
             JenkinsAppSettings settings = JenkinsAppSettings.getSafeInstance(project);
             Map<String, VirtualFile> files = new HashMap<>();
@@ -207,7 +207,7 @@ public class SelectJobDialog extends JDialog {
             requestManager.runBuild(selectedJob, settings, files);
             //browserPanel.loadSelectedJob();
             browserPanel.notifyInfoJenkinsToolWindow(createHtmlLinkMessage(
-                    selectedJob.getName() + " build is on going",
+                    selectedJob.getJobName() + " build is on going",
                     selectedJob.getUrl())
             );
             watchJob(browserPanel, selectedJob);

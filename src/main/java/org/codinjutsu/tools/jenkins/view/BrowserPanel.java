@@ -50,6 +50,7 @@ import org.codinjutsu.tools.jenkins.model.FavoriteView;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.model.View;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.action.GotoBuildConsolePageAction;
 import org.codinjutsu.tools.jenkins.view.action.GotoBuildPageAction;
@@ -77,6 +78,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.util.Collection;
 import java.util.Comparator;
@@ -86,6 +88,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
@@ -116,11 +121,23 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     private FavoriteView favoriteView;
     private View currentSelectedView;
 
-    private final Map<String, Job> watchedJobs = new ConcurrentHashMap<>();
+    private final Map<String, ViewElement> watchedJobs = new ConcurrentHashMap<>();
 
-    private static final Comparator<DefaultMutableTreeNode> sortByStatusComparator = Comparator.comparing(node -> BuildStatusEnum.getStatus(((Job) node.getUserObject()).getColor()).ordinal());
+    private static final Comparator<DefaultMutableTreeNode> sortByStatusComparator = Comparator.comparing(node -> {
+        Object userObject = node.getUserObject();
+        if (userObject instanceof ViewElement) {
+            return BuildStatusEnum.getStatus(((ViewElement) userObject).getColor()).ordinal();
+        }
+        return 0;
+    });
 
-    private static final Comparator<DefaultMutableTreeNode> sortByNameComparator = Comparator.comparing(node -> ((Job) node.getUserObject()).getName());
+    private static final Comparator<DefaultMutableTreeNode> sortByNameComparator = Comparator.comparing(node -> {
+        Object userObject = node.getUserObject();
+        if (userObject instanceof ViewElement) {
+            return defaultString(((ViewElement) userObject).getJobName());
+        }
+        return EMPTY;
+    });
 
     public static BrowserPanel getInstance(Project project) {
         return ServiceManager.getService(project, BrowserPanel.class);
@@ -188,11 +205,11 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         return TreeUtil.collectSelectedObjectsOfType(jobTree, Job.class);
     }
 
-    public Collection<Job> getJobs() {
+    public Collection<ViewElement> getJobs() {
         return jenkins.getJobs();
     }
 
-    public Job getJob(String name) {
+    public ViewElement getJob(String name) {
         return jenkins.getJob(name);
     }
 
@@ -213,9 +230,9 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         ToolWindowManager.getInstance(project).unregisterToolWindow(JenkinsWindowManager.JENKINS_BROWSER);
     }
 
-    private static void visit(Job job, BuildStatusVisitor buildStatusVisitor) {
-        Build lastBuild = job.getLastBuild();
-        if (job.isBuildable() && lastBuild != null) {
+    private static void visit(@NotNull ViewElement viewElement, BuildStatusVisitor buildStatusVisitor) {
+        Build lastBuild = viewElement.getLastBuild();
+        if (viewElement.isBuildable() && lastBuild != null) {
             BuildStatusEnum status = lastBuild.getStatus();
             switch (status) {
                 case FAILURE:
@@ -240,7 +257,10 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     private void update() {
-        ((DefaultTreeModel) jobTree.getModel()).nodeChanged((TreeNode) jobTree.getSelectionPath().getLastPathComponent());
+        TreePath selectionPath = jobTree.getSelectionPath();
+        if (selectionPath instanceof TreeNode) {
+            ((DefaultTreeModel) jobTree.getModel()).nodeChanged((TreeNode) selectionPath.getLastPathComponent());
+        }
     }
 
     public Jenkins getJenkins() {
@@ -262,7 +282,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         loadJob(getSelectedJob());
     }
 
-    public void loadJob(final Job job) {
+    public void loadJob(final ViewElement job) {
         if (!SwingUtilities.isEventDispatchThread()) {
             logger.warn("BrowserPanel.loadJob called from outside of EDT");
         }
@@ -287,7 +307,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         updateJobNode(job);
     }
 
-    private void updateJobNode(Job job) {
+    private void updateJobNode(ViewElement job) {
         final DefaultTreeModel model = (DefaultTreeModel) jobTree.getModel();
         final Object modelRoot = model.getRoot();
         final int childCount = model.getChildCount(modelRoot);
@@ -321,6 +341,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         GuiUtil.runInSwingThread(() -> ToolWindowManager.getInstance(project).notifyByBalloon(JenkinsWindowManager.JENKINS_BROWSER, MessageType.ERROR, message));
     }
 
+    @NotNull
     private Tree createTree(final List<JenkinsSettings.FavoriteJob> favoriteJobs) {
 
         SimpleTree tree = new SimpleTree();
@@ -332,8 +353,8 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         new TreeSpeedSearch(tree, treePath -> {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
             final Object userObject = node.getUserObject();
-            if (userObject instanceof Job) {
-                return ((Job) userObject).getName();
+            if (userObject instanceof ViewElement) {
+                return ((ViewElement) userObject).getJobName();
             }
             return "<empty>";
         });
@@ -450,16 +471,16 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         if (SwingUtilities.isEventDispatchThread()) {
             logger.warn("BrowserPanel.loadJobs called from EDT");
         }
-        Collection<Job> jobList = getJobList();
+        Collection<ViewElement> jobList = getJobList();
         jenkinsSettings.setLastSelectedView(currentSelectedView.getName());
         jenkins.setJobs(jobList);
     }
 
-    private Collection<Job> getJobList() {
+    private Collection<ViewElement> getJobList() {
         if (currentSelectedView instanceof FavoriteView) {
             return requestManager.loadFavoriteJobs(jenkinsSettings.getFavoriteJobs());
         }
-        return requestManager.loadJenkinsView(currentSelectedView);
+        return requestManager.loadJenkinsView(jenkinsAppSettings, currentSelectedView.getUrl());
     }
 
     private View getViewToLoad() {
@@ -470,7 +491,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         return jenkins.getPrimaryView();
     }
 
-    private void fillBuildsTree(Job job, DefaultMutableTreeNode jobNode) {
+    private void fillBuildsTree(@NotNull ViewElement job, DefaultMutableTreeNode jobNode) {
         if (!job.getLastBuilds().isEmpty()) {
             for (Build build : job.getLastBuilds()) {
                 jobNode.add(new DefaultMutableTreeNode(build));
@@ -479,7 +500,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     private void fillJobTree(final BuildStatusVisitor buildStatusVisitor) {
-        final Collection<Job> jobList = jenkins.getJobs();
+        final Collection<ViewElement> jobList = jenkins.getJobs();
         if (jobList.isEmpty()) {
             return;
         }
@@ -488,7 +509,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         final DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) model.getRoot();
         rootNode.removeAllChildren();
 
-        for (Job job : jobList) {
+        for (ViewElement job : jobList) {
             DefaultMutableTreeNode jobNode = new DefaultMutableTreeNode(job);
             if (job.isFetchBuild()) {
                 fillBuildsTree(job, jobNode);
@@ -582,11 +603,13 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         }
     }
 
-    public void addToWatch(String changeListName, Job job) {
+    public void addToWatch(String changeListName, @NotNull ViewElement job) {
         JenkinsAppSettings settings = JenkinsAppSettings.getSafeInstance(project);
         Build build = job.getLastBuild();
-        build.setNumber(build.getNumber() + 1);
-        build.setUrl(settings.getServerUrl() + String.format("/job/%s/%d/", job.getName(), build.getNumber()));
+        if (build != null) {
+            build.setNumber(build.getNumber() + 1);
+            build.setUrl(settings.getServerUrl() + String.format("/job/%s/%d/", job.getJobName(), build.getNumber()));
+        }
         watchedJobs.put(changeListName, job);
     }
 
@@ -595,9 +618,12 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
             logger.warn("BrowserPanel.watch called from outside EDT");
         }
         if (!watchedJobs.isEmpty()) {
-            for (final Map.Entry<String, Job> entry : watchedJobs.entrySet()) {
-                final Job job = entry.getValue();
+            for (final Map.Entry<String, ViewElement> entry : watchedJobs.entrySet()) {
+                final ViewElement job = entry.getValue();
                 final Build lastBuild = job.getLastBuild();
+                if (lastBuild == null) {
+                    continue;
+                }
                 new Task.Backgroundable(project, "Jenkins build watch", true, JenkinsLoadingTaskOption.INSTANCE) {
 
                     private Build build;
@@ -620,7 +646,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         }
     }
 
-    public Map<String, Job> getWatched() {
+    public Map<String, ViewElement> getWatched() {
         return watchedJobs;
     }
 }

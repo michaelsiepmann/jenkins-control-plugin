@@ -23,7 +23,7 @@ import com.intellij.openapi.vcs.changes.LocalChangeList;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import org.codinjutsu.tools.jenkins.model.Build;
-import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,7 +72,7 @@ public class ChangesBarProjectComponent implements ProjectComponent, ChangeListD
     public void decorateChangeList(LocalChangeList localChangeList, ColoredTreeCellRenderer coloredTreeCellRenderer, boolean b, boolean b2, boolean b3) {
         BrowserPanel browserPanel = BrowserPanel.getInstance(project);
         //browserPanel.watch();
-        Map<String, Job> jobs = browserPanel.getWatched();
+        Map<String, ViewElement> jobs = browserPanel.getWatched();
         if (jobs.containsKey(localChangeList.getName())) {
             Build build = jobs.get(localChangeList.getName()).getLastBuild();
             String status = build.getStatus().getStatus();

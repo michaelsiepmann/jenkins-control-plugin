@@ -19,6 +19,7 @@ package org.codinjutsu.tools.jenkins.logic;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.serviceContainer.NonInjectable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
@@ -27,6 +28,7 @@ import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
@@ -66,6 +68,7 @@ public class RequestManager {
         this.urlBuilder = UrlBuilder.getInstance(project);
     }
 
+    @NonInjectable
     RequestManager(UrlBuilder urlBuilder, SecurityClient securityClient) {
         this.urlBuilder = urlBuilder;
         this.securityClient = securityClient;
@@ -87,7 +90,9 @@ public class RequestManager {
         Jenkins jenkins = jsonParser.createWorkspace(jenkinsWorkspaceData, configuration.getServerUrl());
 
         int jenkinsPort = url.getPort();
-        URL viewUrl = urlBuilder.createViewUrl(jenkinsPlateform, jenkins.getPrimaryView().getUrl());
+        View primaryView = jenkins.getPrimaryView();
+        assert primaryView != null;
+        URL viewUrl = urlBuilder.createViewUrl(configuration, jenkinsPlateform, primaryView.getUrl());
         int viewPort = viewUrl.getPort();
 
         if (isJenkinsPortSet(jenkinsPort) && jenkinsPort != viewPort) {
@@ -105,12 +110,6 @@ public class RequestManager {
         return jenkinsPort != -1;
     }
 
-    /**
-     * Note! needs to be called after plugin is logged in
-     *
-     * @param configuration
-     * @return
-     */
     public Map<String, Build> loadJenkinsRssLatestBuilds(JenkinsAppSettings configuration) {
         if (handleNotYetLoggedInState()) {
             return Collections.emptyMap();
@@ -122,11 +121,12 @@ public class RequestManager {
         return rssParser.loadJenkinsRssLatestBuilds(rssData);
     }
 
-    private Collection<Job> loadJenkinsView(String viewUrl) {
+    @NotNull
+    public Collection<ViewElement> loadJenkinsView(JenkinsAppSettings jenkinsAppSettings, String viewUrl) {
         if (handleNotYetLoggedInState()) {
             return emptyList();
         }
-        URL url = urlBuilder.createViewUrl(jenkinsPlateform, viewUrl);
+        URL url = urlBuilder.createViewUrl(jenkinsAppSettings, jenkinsPlateform, viewUrl);
         String jenkinsViewData = securityClient.execute(url);
         if (jenkinsPlateform.equals(JenkinsPlateform.CLASSIC)) {
             return jsonParser.createViewJobs(jenkinsViewData);
@@ -190,7 +190,7 @@ public class RequestManager {
         return jsonParser.createBuilds(job, jenkinsJobData);
     }
 
-    public void runBuild(Job job, JenkinsAppSettings configuration, Map<String, VirtualFile> files) {
+    public void runBuild(ViewElement job, JenkinsAppSettings configuration, Map<String, VirtualFile> files) {
         if (handleNotYetLoggedInState()) {
             return;
         }
@@ -205,7 +205,7 @@ public class RequestManager {
         runBuild(job, configuration);
     }
 
-    public void runBuild(Job job, JenkinsAppSettings configuration) {
+    public void runBuild(ViewElement job, JenkinsAppSettings configuration) {
         if (handleNotYetLoggedInState()) {
             return;
         }
@@ -240,11 +240,11 @@ public class RequestManager {
         securityClient.connect(urlBuilder.createAuthenticationUrl(serverUrl));
     }
 
-    public List<Job> loadFavoriteJobs(List<JenkinsSettings.FavoriteJob> favoriteJobs) {
+    public List<ViewElement> loadFavoriteJobs(List<JenkinsSettings.FavoriteJob> favoriteJobs) {
         if (handleNotYetLoggedInState()) {
             return emptyList();
         }
-        List<Job> jobs = new LinkedList<>();
+        List<ViewElement> jobs = new LinkedList<>();
         for (JenkinsSettings.FavoriteJob favoriteJob : favoriteJobs) {
             jobs.add(loadJob(favoriteJob.url));
         }
@@ -255,19 +255,15 @@ public class RequestManager {
         stopBuild(build.getUrl());
     }
 
-    public Job loadJob(Job job) {
+    public Job loadJob(ViewElement job) {
         return loadJob(job.getUrl());
-    }
-
-    public Collection<Job> loadJenkinsView(View view) {
-        return loadJenkinsView(view.getUrl());
     }
 
     public Collection<Build> loadBuilds(Job job) {
         return loadBuilds(job, job.getUrl());
     }
 
-    public Build loadBuild(Build build) {
+    public Build loadBuild(@NotNull Build build) {
         return loadBuild(build.getJob(), build.getUrl());
     }
 

@@ -109,7 +109,7 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
     @NotNull
     private FavoriteJob createFavoriteJob(Job job) {
         FavoriteJob favoriteJob = new FavoriteJob();
-        favoriteJob.name = job.getName();
+        favoriteJob.name = job.getJobName();
         favoriteJob.url = job.getUrl();
         return favoriteJob;
     }
@@ -120,7 +120,7 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
 
     public void removeFavorite(Iterable<Job> selectedJobs) {//TODO need to refactor
         for (Job selectedJob : selectedJobs) {
-            myState.favoriteJobs.removeIf(favoriteJob -> StringUtils.equals(selectedJob.getName(), favoriteJob.name));
+            myState.favoriteJobs.removeIf(favoriteJob -> StringUtils.equals(selectedJob.getJobName(), favoriteJob.name));
         }
     }
 

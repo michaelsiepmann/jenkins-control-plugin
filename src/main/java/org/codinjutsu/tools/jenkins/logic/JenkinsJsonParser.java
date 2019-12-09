@@ -27,9 +27,11 @@ import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Builds;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.model.Jobs;
 import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.View;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -65,7 +67,7 @@ public class JenkinsJsonParser implements JenkinsParser {
         return jenkins;
     }
 
-    private ObjectMapper createObjectMapper() {
+    public static ObjectMapper createObjectMapper() {
         return new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -152,12 +154,13 @@ public class JenkinsJsonParser implements JenkinsParser {
     }
 
     @Override
-    public Collection<Job> createViewJobs(String jsonData) {
+    @NotNull
+    public Collection<ViewElement> createViewJobs(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
         try {
             Jobs jobs = createObjectMapper().readValue(jsonData, Jobs.class);
-            return jobs.getJobs();
+            return jobs.getViews();
         } catch (IOException e) {
             String message = String.format("Error during parsing JSON data : %s", jsonData);
             LOG.error(message, e);
@@ -166,7 +169,7 @@ public class JenkinsJsonParser implements JenkinsParser {
     }
 
     @Override
-    public Collection<Job> createCloudbeesViewJobs(String jsonData) {
+    public Collection<ViewElement> createCloudbeesViewJobs(String jsonData) {
         checkJsonDataAndThrowExceptionIfNecessary(jsonData);
 
         try {
@@ -177,7 +180,7 @@ public class JenkinsJsonParser implements JenkinsParser {
             }
 
             ParsedView view = (ParsedView) CollectionUtils.get(views, 0);
-            Collection<Job> jobs = view.getJobs();
+            Collection<ViewElement> jobs = view.getViews();
             if (jobs == null) {
                 return emptyList();
             }

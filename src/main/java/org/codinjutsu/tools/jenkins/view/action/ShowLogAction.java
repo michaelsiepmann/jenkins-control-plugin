@@ -24,7 +24,6 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -42,6 +41,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+
+import static com.intellij.openapi.actionSystem.ActionPlaces.UNKNOWN;
 
 public class ShowLogAction extends AnAction implements DumbAware {
 
@@ -61,7 +62,7 @@ public class ShowLogAction extends AnAction implements DumbAware {
 
         final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
         final Job job = browserPanel.getSelectedJob();
-        new Task.Backgroundable(project, job.getName(), false) {
+        new Task.Backgroundable(project, job.getJobName(), false) {
 
             String consoleContent;
 
@@ -79,7 +80,7 @@ public class ShowLogAction extends AnAction implements DumbAware {
                     JPanel panel = new JPanel(new BorderLayout());
 
                     DefaultActionGroup toolbarActions = new DefaultActionGroup();
-                    ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, toolbarActions, false);
+                    ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar(UNKNOWN, toolbarActions, false);
                     panel.add(actionToolbar.getComponent(), BorderLayout.WEST);
                     panel.add(consoleView.getComponent(), BorderLayout.CENTER);
                     actionToolbar.setTargetComponent(panel);

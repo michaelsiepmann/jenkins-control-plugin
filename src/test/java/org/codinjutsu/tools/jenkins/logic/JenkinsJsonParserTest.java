@@ -18,6 +18,7 @@ package org.codinjutsu.tools.jenkins.logic;
 
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.model.View;
 import org.codinjutsu.tools.jenkins.util.IOUtils;
 import org.junit.Before;
@@ -78,7 +79,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void loadClassicView() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadClassicView.json")));
+        Collection<ViewElement> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadClassicView.json")));
 
         Collection<Job> expectedJobs = new LinkedList<>();
         expectedJobs.add(new JobBuilder().job("sql-tools", "blue", "http://myjenkins/job/sql-tools/", "true", "true")
@@ -102,7 +103,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void loadClassicViewWithEmptyBooleans() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManger_loadWithEmptyBooleans.json")));
+        Collection<ViewElement> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManger_loadWithEmptyBooleans.json")));
 
         Collection<Job> expectedJobs = new LinkedList<>();
         expectedJobs.add(new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "false", "false")
@@ -116,7 +117,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void loadClassicViewWithEmptyBuildDate() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManger_loadWithEmptyDate.json")));
+        Collection<ViewElement> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManger_loadWithEmptyDate.json")));
 
         /*List<Job> expectedJobs = new LinkedList<Job>();
         expectedJobs.add(new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "false", "false")
@@ -130,7 +131,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void loadClassicViewWithEmptyBuildDate105() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadDataFor105.json")));
+        Collection<ViewElement> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadDataFor105.json")));
 
         /*List<Job> expectedJobs = new LinkedList<Job>();
         expectedJobs.add(new JobBuilder().job("swing-utils", "disabled", "http://myjenkins/job/swing-utils/", "false", "false")
@@ -144,7 +145,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void loadCloudbeesView() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createCloudbeesViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadCloudbeesView.json")));
+        Collection<ViewElement> actualJobs = jsonParser.createCloudbeesViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadCloudbeesView.json")));
 
         List<Job> expectedJobs = Arrays.asList(
                 new JobBuilder().job("sql-tools", "blue", "http://myjenkins/job/sql-tools/", "true", "true")
@@ -180,7 +181,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void testBugWithNullLastBuildAndEmptyHealthReport() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("bugWithEmptyHealthReportAndNullLastBuild.json")));
+        Collection<ViewElement> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("bugWithEmptyHealthReportAndNullLastBuild.json")));
 
 
         List<Job> expectedJobs = Arrays.asList(
@@ -205,7 +206,7 @@ public class JenkinsJsonParserTest {
 
     @Test
     public void testBugWithManyParameters() throws Exception {
-        Collection<Job> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadJobManyParameters.json"), "utf-8"));
+        Collection<ViewElement> actualJobs = jsonParser.createViewJobs(IOUtils.toString(getClass().getResourceAsStream("JsonRequestManager_loadJobManyParameters.json"), "utf-8"));
 
 
         List<Job> expectedJobs = Collections.singletonList(

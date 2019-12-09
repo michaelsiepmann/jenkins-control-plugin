@@ -27,6 +27,7 @@ import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 import org.codinjutsu.tools.jenkins.logic.ExecutorService;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.util.HtmlUtil;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
@@ -65,7 +66,7 @@ public class RunBuildAction extends AnAction implements DumbAware {
                     notifyOnGoingMessage(job);
                     ExecutorService.getInstance(project).getExecutor().schedule(() ->
                             GuiUtil.runInSwingThread(() -> {
-                                final Job newJob = browserPanel.getJob(job.getName());
+                                final ViewElement newJob = browserPanel.getJob(job.getJobName());
                                 browserPanel.loadJob(newJob);
                             }), BUILD_STATUS_UPDATE_DELAY, TimeUnit.SECONDS); //FIXME check delay coud be in settings
                 }
@@ -85,7 +86,7 @@ public class RunBuildAction extends AnAction implements DumbAware {
 
                             @Override
                             public void notifyOnError(Job job, Exception ex) {
-                                browserPanel.notifyErrorJenkinsToolWindow("Build '" + job.getName() + "' cannot be run: " + ex.getMessage());
+                                browserPanel.notifyErrorJenkinsToolWindow("Build '" + job.getJobName() + "' cannot be run: " + ex.getMessage());
                                 browserPanel.loadJob(job);
                             }
 
@@ -112,7 +113,7 @@ public class RunBuildAction extends AnAction implements DumbAware {
 
     private void notifyOnGoingMessage(Job job) {
         browserPanel.notifyInfoJenkinsToolWindow(HtmlUtil.createHtmlLinkMessage(
-                job.getName() + " build is on going",
+                job.getJobName() + " build is on going",
                 job.getUrl()));
     }
 }

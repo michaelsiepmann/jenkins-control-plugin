@@ -99,7 +99,7 @@ class JobTestResultsHandler {
         private String message;
 
         MyTestFailed(TestCase c) {
-            super(c.getName(), null);
+            super(c.getName(), "");
             this.stacktrace = c.getErrorStackTrace();
             this.message = c.getErrorDetails();
         }

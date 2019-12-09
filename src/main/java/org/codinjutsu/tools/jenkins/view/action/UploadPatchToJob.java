@@ -27,6 +27,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.util.HtmlUtil;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
@@ -99,11 +100,11 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
                         }
                     }
                 } else {
-                    message = String.format("Job \"%s\" should has parameter with name \"%s\"", job.getName(), PARAMETER_NAME);
+                    message = String.format("Job \"%s\" should has parameter with name \"%s\"", job.getJobName(), PARAMETER_NAME);
 
                 }
             } else {
-                message = String.format("Job \"%s\" has no parameters", job.getName());
+                message = String.format("Job \"%s\" has no parameters", job.getJobName());
             }
 
         } catch (Exception e) {
@@ -118,14 +119,14 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
 
     }
 
-    public static VirtualFile prepareFile(BrowserPanel browserPanel, VirtualFile file, JenkinsAppSettings settings, Job job) throws IOException {
+    public static VirtualFile prepareFile(BrowserPanel browserPanel, VirtualFile file, JenkinsAppSettings settings, ViewElement job) throws IOException {
         if ((null != file) && file.exists()) {
             InputStream stream = file.getInputStream();
             InputStreamReader streamReader = new InputStreamReader(stream);
             BufferedReader bufferReader = new BufferedReader(streamReader);
             String line;
             String suffix = settings.getSuffix();
-            suffix = suffix.replace(SUFFIX_JOB_NAME_MACROS, job.getName());
+            suffix = suffix.replace(SUFFIX_JOB_NAME_MACROS, job.getJobName());
             StringBuilder builder = new StringBuilder();
             while ((line = bufferReader.readLine()) != null) {
                 if (line.startsWith("Index: ") && !line.startsWith("Index: " + suffix)) {
@@ -160,7 +161,7 @@ public class UploadPatchToJob extends AnAction implements DumbAware {
 
     private void notifyOnGoingMessage(Job job) {
         browserPanel.notifyInfoJenkinsToolWindow(HtmlUtil.createHtmlLinkMessage(
-                job.getName() + " build is on going",
+                job.getJobName() + " build is on going",
                 job.getUrl()));
     }
 }

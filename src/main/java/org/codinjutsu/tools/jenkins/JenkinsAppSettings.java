@@ -63,13 +63,20 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         return myState.serverUrl;
     }
 
-
     public void setServerUrl(String serverUrl) {
         myState.serverUrl = serverUrl;
     }
 
     public boolean isServerUrlSet() {
         return StringUtils.isNotEmpty(myState.serverUrl) && !DUMMY_JENKINS_SERVER_URL.equals(myState.serverUrl);
+    }
+
+    public String getFixedURL() {
+        return myState.fixedURL;
+    }
+
+    public void setFixedURL(String fixedURL) {
+        myState.fixedURL = fixedURL;
     }
 
     public int getBuildDelay() {
@@ -160,6 +167,7 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
     public static class State {
 
         public String serverUrl = DUMMY_JENKINS_SERVER_URL;
+        public String fixedURL = null;
         public int delay = DEFAULT_BUILD_DELAY;
         public int jobRefreshPeriod = RESET_PERIOD_VALUE;
         public int rssRefreshPeriod = RESET_PERIOD_VALUE;

@@ -21,13 +21,15 @@ import com.intellij.openapi.project.Project;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.appendIfMissing;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_DURATION;
 import static org.codinjutsu.tools.jenkins.logic.JenkinsParser.BUILD_ID;
@@ -100,18 +102,27 @@ public class UrlBuilder {
         return null;
     }
 
-    public URL createViewUrl(JenkinsPlateform jenkinsPlateform, String viewUrl) {
+    public URL createViewUrl(JenkinsAppSettings jenkinsAppSettings, JenkinsPlateform jenkinsPlateform, String viewUrl) {
         String basicViewInfo = BASIC_VIEW_INFO;
         if (JenkinsPlateform.CLOUDBEES.equals(jenkinsPlateform)) {
             basicViewInfo = CLOUDBEES_VIEW_INFO;
         }
         try {
-            return new URL(viewUrl + URIUtil.encodePathQuery(API_JSON + TREE_PARAM + basicViewInfo));
+            return new URL(updateURL(jenkinsAppSettings, viewUrl) + URIUtil.encodePathQuery(API_JSON + TREE_PARAM + basicViewInfo));
         } catch (Exception ex) {
             handleException(ex);
         }
 
         return null;
+    }
+
+    @NotNull
+    private String updateURL(@NotNull JenkinsAppSettings jenkinsAppSettings, @NotNull String url) {
+        if (isNotEmpty(jenkinsAppSettings.getFixedURL()) &&
+                url.equals(appendIfMissing(jenkinsAppSettings.getServerUrl(), "/"))) {
+            return appendIfMissing(jenkinsAppSettings.getFixedURL(), "/");
+        }
+        return url;
     }
 
     public URL createJobUrl(String jobUrl) {
