@@ -32,11 +32,11 @@ public class JenkinsViewComboRenderer extends ColoredListCellRenderer<View> {
     private static final Icon FAVORITE_ICON = GuiUtil.loadIcon("star.png");
 
     @Override
-    protected void customizeCellRenderer(@NotNull JList list, View value, int index, boolean selected, boolean hasFocus) {
-        if (value != null) {
-            append(value.getName(), REGULAR_ATTRIBUTES);
+    protected void customizeCellRenderer(@NotNull JList list, View view, int index, boolean selected, boolean hasFocus) {
+        if (view != null) {
+            append(view.getName(), REGULAR_ATTRIBUTES);
 
-            if (value instanceof FavoriteView) {
+            if (view instanceof FavoriteView) {
                 setIcon(FAVORITE_ICON);
             }
         }

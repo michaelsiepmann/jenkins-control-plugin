@@ -166,7 +166,7 @@ public class SelectJobDialog extends JDialog {
             }
         }
         List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(project, changes, project.getBasePath(), false);
-        UnifiedDiffWriter.write(project, patches, writer, CodeStyle.getSettings(project).getLineSeparator(), null);
+        UnifiedDiffWriter.write(project, patches, writer, CodeStyle.getProjectOrDefaultSettings(project).getLineSeparator(), null);
         writer.close();
     }
 

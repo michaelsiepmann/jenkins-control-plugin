@@ -100,6 +100,7 @@ public class BuildParamDialog extends JDialog {
             BuildParamDialog dialog = new BuildParamDialog(job, configuration, requestManager, runBuildCallback);
             dialog.setLocationRelativeTo(null);
             dialog.setMaximumSize(new Dimension(300, 200));
+            dialog.setSize(dialog.getPreferredSize());
             dialog.pack();
             dialog.setVisible(true);
         });

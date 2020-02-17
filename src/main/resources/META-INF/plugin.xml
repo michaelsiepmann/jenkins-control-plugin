@@ -1,21 +1,25 @@
 <idea-plugin>
+    <!--suppress PluginXmlValidity -->
     <name>Jenkins Control Plugin</name>
-    <description>A Jenkins Plugin for Intellij</description>
-    <version>0.10.2019</version>
-    <vendor email="david.boissier [at] gmail [dot] com" url="http://codinjutsu.blogspot.com">
+    <id>Jenkins Control Plugin</id>
+    <description><![CDATA[A Jenkins Plugin for Intellij. Will be replaced by gradle build]]></description>
+    <version>0.11.0</version>
+    <vendor url="https://github.com/MCMicS/jenkins-control-plugin/issues">
         Programisci.eu
         David Boissier,
         Yuri Novitsky (support of PPP),
+        Michael Suhr
     </vendor>
     <idea-version since-build="193.3519.25"/>
     <!--<idea-version since-build="143.0" until-build="143.9999"/>-->
 
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
     <depends>com.intellij.modules.lang</depends>
+    <!--    <depends>com.intellij.modules.java</depends>-->
+    <depends optional="true" config-file="JavaSupport.xml">com.intellij.java</depends>
 
     <project-components>
-        <component>
-            <implementation-class>org.codinjutsu.tools.jenkins.JenkinsComponent</implementation-class>
-        </component>
         <component>
             <implementation-class>org.codinjutsu.tools.jenkins.ChangesBarProjectComponent</implementation-class>
         </component>
@@ -29,6 +33,7 @@
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.JenkinsAppSettings"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.JenkinsSettings"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.JenkinsWindowManager"/>
+        <statusBarWidgetProvider implementation="org.codinjutsu.tools.jenkins.StatusBarProvider"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.view.JenkinsWidget"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.logic.RequestManager"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.logic.UrlBuilder"/>
@@ -36,17 +41,33 @@
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.logic.RssLogic"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.logic.BrowserPanelAuthenticationHandler"/>
         <projectService serviceImplementation="org.codinjutsu.tools.jenkins.logic.RssAuthenticationActionHandler"/>
+
+        <!-- since IDEA 192.5118: use backgroundPostStartupActivity -->
+        <postStartupActivity implementation="org.codinjutsu.tools.jenkins.StartupJenkinsService" />
+
+        <toolWindow id="Jenkins"
+                    anchor="right"
+                    canCloseContents="false"
+                    factoryClass="org.codinjutsu.tools.jenkins.JenkinsToolWindowFactory"
+                    icon="/images/jenkins_logo.png" />
+        <toolWindow id="Job test results"
+                    anchor="bottom"
+                    canCloseContents="true"
+                    factoryClass="org.codinjutsu.tools.jenkins.view.action.results.JobTestResultsToolWindowFactory"/>
     </extensions>
 
     <actions>
-        <action id="Jenkins.CreatePatchAndBuildOnJenkins" class="org.codinjutsu.tools.jenkins.view.action.CreatePatchAndBuildAction" text="Create Patch and build on Jenkins">
+        <action id="Jenkins.CreatePatchAndBuildOnJenkins" class="org.codinjutsu.tools.jenkins.view.action.CreatePatchAndBuildAction" text="Create Patch and Build on Jenkins">
             <add-to-group group-id="ChangesViewPopupMenu" anchor="last"/>
         </action>
     </actions>
 
-    <change-notes><![CDATA[
-<a href="http://programisci.eu/en/intellij-jenkins-plugin/">Note</a>
-<a href="https://github.com/programisci/jenkins-control-plugin/blob/jenkins-control-plugin-0.10.0/README.md">Read Me</a><br/>
-<a href="https://github.com/programisci/jenkins-control-plugin/blob/jenkins-control-plugin-0.10.0/CHANGELOG.txt">Changelog</a>
-]]> </change-notes>
+    <extensionPoints>
+        <extensionPoint name="viewTestResults" interface="org.codinjutsu.tools.jenkins.view.extension.ViewTestResults" dynamic="true"/>
+    </extensionPoints>
+
+    <!--suppress PluginXmlValidity -->
+    <change-notes>
+        <![CDATA[REPLACED BY pluginDescription.html]]>
+    </change-notes>
 </idea-plugin>

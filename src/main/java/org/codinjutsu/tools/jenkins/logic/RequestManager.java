@@ -19,7 +19,6 @@ package org.codinjutsu.tools.jenkins.logic;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.serviceContainer.NonInjectable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
@@ -28,14 +27,15 @@ import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
-import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.model.TestResult;
 import org.codinjutsu.tools.jenkins.model.View;
+import org.codinjutsu.tools.jenkins.model.ViewElement;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
 import org.codinjutsu.tools.jenkins.security.SecurityClient;
 import org.codinjutsu.tools.jenkins.security.SecurityClientFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import javax.swing.SwingUtilities;
 import java.net.URL;
@@ -53,25 +53,18 @@ public class RequestManager {
 
     private static final String BUILDHIVE_CLOUDBEES = "buildhive";
 
-    private UrlBuilder urlBuilder;
+    private final UrlBuilder urlBuilder;
     private SecurityClient securityClient;
     private JenkinsPlateform jenkinsPlateform = JenkinsPlateform.CLASSIC;
-    private RssParser rssParser = new RssParser();
-    private JenkinsParser jsonParser = new JenkinsJsonParser();
+    private final RssParser rssParser = new RssParser();
+    private final JenkinsParser jsonParser = new JenkinsJsonParser();
 
     public static RequestManager getInstance(Project project) {
         return ServiceManager.getService(project, RequestManager.class);
     }
 
-
     public RequestManager(Project project) {
         this.urlBuilder = UrlBuilder.getInstance(project);
-    }
-
-    @NonInjectable
-    RequestManager(UrlBuilder urlBuilder, SecurityClient securityClient) {
-        this.urlBuilder = urlBuilder;
-        this.securityClient = securityClient;
     }
 
     public Jenkins loadJenkinsWorkspace(JenkinsAppSettings configuration) {
@@ -284,5 +277,10 @@ public class RequestManager {
         String jsonData = securityClient.execute(url);
         TestResult testResult = jsonParser.createTestResult(jsonData);
         return Collections.singletonList(testResult);
+    }
+
+    @TestOnly
+    void setSecurityClient(SecurityClient securityClient) {
+        this.securityClient = securityClient;
     }
 }

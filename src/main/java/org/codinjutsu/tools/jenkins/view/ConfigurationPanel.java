@@ -33,7 +33,6 @@ import org.codinjutsu.tools.jenkins.util.GuiUtil;
 import org.codinjutsu.tools.jenkins.view.annotation.FormValidator;
 import org.codinjutsu.tools.jenkins.view.annotation.GuiField;
 import org.codinjutsu.tools.jenkins.view.validator.NotNullValidator;
-import org.codinjutsu.tools.jenkins.view.validator.UIValidator;
 import org.codinjutsu.tools.jenkins.view.validator.UrlValidator;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +54,6 @@ import java.net.URL;
 
 import static org.codinjutsu.tools.jenkins.view.validator.ValidatorTypeEnum.URL;
 
-@SuppressWarnings({"unchecked"})
 public class ConfigurationPanel {
 
     private static final Color CONNECTION_TEST_SUCCESSFUL_COLOR = JBColor.GREEN;
@@ -76,7 +74,7 @@ public class ConfigurationPanel {
 
     private JPanel rootPanel;
 
-    private JButton testConnexionButton;
+    private JButton testConnectionButton;
     private JLabel connectionStatusLabel;
     private JPanel debugPanel;
     private JTextPane debugTextPane;
@@ -94,7 +92,7 @@ public class ConfigurationPanel {
     private JButton openCrumbDataURLButton;
     private JTextField fixedURL;
 
-    private final FormValidator formValidator;
+    private final FormValidator<JTextField> formValidator;
 
     private boolean myPasswordModified = false;
 
@@ -111,7 +109,7 @@ public class ConfigurationPanel {
         passwordField.setName("passwordFile");
         crumbDataField.setName("crumbDataFile");
 
-        testConnexionButton.setName("testConnexionButton");
+        testConnectionButton.setName("testConnectionButton");
         connectionStatusLabel.setName("connectionStatusLabel");
 
         successOrStableCheckBox.setName("successOrStableCheckBox");
@@ -150,9 +148,9 @@ public class ConfigurationPanel {
             }
         });
 
-        testConnexionButton.addActionListener(event -> onConnectionClicked(project));
+        testConnectionButton.addActionListener(event -> onConnectionClicked(project));
 
-        formValidator = FormValidator.init(this).addValidator(username, (UIValidator<JTextField>) this::validateForm);
+        formValidator = FormValidator.<JTextField>init(this).addValidator(username, this::validateForm);
         openCrumbDataURLButton.addActionListener(e -> openCrumbDataUrl(project));
     }
 

@@ -30,8 +30,7 @@ import org.jetbrains.annotations.NotNull;
 @State(
         name = "Jenkins.Application.Settings",
         storages = {
-                @Storage("$PROJECT_FILE$"),
-                @Storage("$PROJECT_CONFIG_DIR$/jenkinsSettings.xml")
+                @Storage("jenkinsSettings.xml")
         }
 )
 public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSettings.State> {

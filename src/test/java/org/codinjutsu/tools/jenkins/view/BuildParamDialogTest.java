@@ -34,19 +34,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import static junit.framework.Assert.assertTrue;
 import static org.codinjutsu.tools.jenkins.model.JobParameterDefinition.JobParameterType.BooleanParameterDefinition;
 import static org.codinjutsu.tools.jenkins.model.JobParameterDefinition.JobParameterType.ChoiceParameterDefinition;
 import static org.codinjutsu.tools.jenkins.model.JobParameterDefinition.JobParameterType.RunParameterDefinition;
 import static org.codinjutsu.tools.jenkins.model.JobParameterDefinition.JobParameterType.StringParameterDefinition;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Ignore("make Test to run headless")
 public class BuildParamDialogTest {
 
     @Mock
@@ -120,8 +120,7 @@ public class BuildParamDialogTest {
                 .requireSelection("development")
                 .contents();
 
-        assertTrue(Arrays.equals(new String[]{"development", "integration", "acceptance", "production"}, contents));
-
+        assertArrayEquals(new String[]{"development", "integration", "acceptance", "production"}, contents);
 
         dialogFixture.textBox(JTextComponentMatcher.any()).requireText("");
 

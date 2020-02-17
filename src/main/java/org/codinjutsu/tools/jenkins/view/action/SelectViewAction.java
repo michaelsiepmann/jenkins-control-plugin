@@ -158,7 +158,7 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
         myPanel.addMouseListener(new MyMouseAdapter());
     }
 
-    private JBList buildViewList(Collection<View> views) {
+    private JBList<View> buildViewList(Collection<View> views) {
         Collection<View> unflattenViews = flatViewList(views);
 
         if (browserPanel.hasFavoriteJobs()) {
@@ -222,18 +222,16 @@ public class SelectViewAction extends DumbAwareAction implements CustomComponent
                 return;
             }
 
-            final JBList viewList = buildViewList(views);
+            final JBList<View> viewList = buildViewList(views);
 
-            JBPopup popup = new PopupChooserBuilder(viewList)
+            JBPopup popup = new PopupChooserBuilder<View>(viewList)
                     .setMovable(false)
                     .setCancelKeyEnabled(true)
                     .setItemChoosenCallback(() -> {
-                        final View view = (View) viewList.getSelectedValue();
-                        if (view == null || view.hasNestedView()) {
-                            return;
+                        final View view = viewList.getSelectedValue();
+                        if (view != null && !view.hasNestedView()) {
+                            browserPanel.loadView(view);
                         }
-
-                        browserPanel.loadView(view);
                     })
                     .createPopup();
 

@@ -17,6 +17,7 @@
 package org.codinjutsu.tools.jenkins;
 
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.wm.StatusBar;
@@ -68,7 +69,7 @@ public class JenkinsWindowManager {
 
         final RssLogic rssLogic = RssLogic.getInstance(project);
 
-        StartupManager.getInstance(project).registerPostStartupActivity(() -> {
+        StartupManager.getInstance(project).registerPostStartupActivity((DumbAwareRunnable) () -> {
             RssAuthenticationActionHandler.getInstance(project);
             BrowserPanelAuthenticationHandler.getInstance(project);
             browserPanel.init();

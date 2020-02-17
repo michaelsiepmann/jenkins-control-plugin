@@ -20,6 +20,7 @@ import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
 import org.codinjutsu.tools.jenkins.view.ConfigurationPanel;
 import org.codinjutsu.tools.jenkins.view.validator.UIValidator;
 import org.codinjutsu.tools.jenkins.view.validator.ValidatorTypeEnum;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
 import java.lang.reflect.Field;
@@ -36,11 +37,12 @@ public class FormValidator<T extends JComponent> {
         this.formToValidate = formToValidate;
     }
 
-    public static FormValidator init(ConfigurationPanel formToValidate) {
-        return new FormValidator(formToValidate);
+    public static <T extends JComponent> FormValidator<T> init(ConfigurationPanel formToValidate) {
+        return new FormValidator<>(formToValidate);
     }
 
-    public FormValidator addValidator(T componentToValidate, UIValidator<T> validator) {
+    @NotNull
+    public FormValidator<T> addValidator(T componentToValidate, UIValidator<T> validator) {
         uiValidatorByUiComponent.put(componentToValidate, validator);
         return this;
     }

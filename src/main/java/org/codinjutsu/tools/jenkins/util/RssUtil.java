@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 public class RssUtil {
 
-    private static final Pattern BUILD_NUMBER_MATCHER = Pattern.compile("#[0-9]{1,}+");
+    private static final Pattern BUILD_NUMBER_MATCHER = Pattern.compile("#[0-9]+");
 
     private static final Pattern SUCCESS_MATCHER = Pattern.compile("normal|stable");
 

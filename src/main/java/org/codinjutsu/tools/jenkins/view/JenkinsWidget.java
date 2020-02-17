@@ -101,17 +101,9 @@ public class JenkinsWidget extends NonOpaquePanel implements CustomStatusBarWidg
         return JenkinsWidget.class.getName();
     }
 
-    @Override
-    public void install(@NotNull StatusBar statusBar) {
-        this.myStatusBar = statusBar;
-    }
+    public void install(@NotNull StatusBar statusBar) {}
 
-    @Override
-    public void dispose() {
-        if (myStatusBar != null) {
-            myStatusBar.removeWidget(ID());
-        }
-    }
+    public void dispose() {}
 
     @Override
     public JComponent getComponent() {

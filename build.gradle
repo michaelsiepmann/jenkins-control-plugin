@@ -12,21 +12,34 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.14"
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.15'
 }
 
-//apply plugin: 'org.jetbrains.intellij'
+group 'org.codinjutsu'
+version '0.11.0-Idea2019.2'
 apply plugin: 'java'
 apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.intellij'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
 
 intellij {
-    version '193.5233.102'
+    version '2019.3'
+    plugins 'java'
     updateSinceUntilBuild false
     pluginName 'jenkins-control-plugin'
     plugins 'java'
+}
+
+patchPluginXml {
+    version "${project.version}"
+    pluginDescription (file('includes/pluginDescription.html').text)
+    changeNotes (file('includes/pluginChanges.html').text)
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 configurations {
@@ -54,6 +67,7 @@ sourceSets {
 
 repositories {
     mavenCentral()
+    maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
 }
 
 compileKotlin {
@@ -63,14 +77,17 @@ compileKotlin {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.10'
-    testCompile 'org.mockito:mockito-all:1.8.5'
-    testCompile 'org.easytesting:fest-swing:1.2'
-    testCompile 'org.easytesting:fest-util:1.1.3'
-    testCompile 'org.unitils:unitils-core:3.3'
+    testImplementation(
+            'junit:junit:4.13',
+            'org.mockito:mockito-all:1.8.5',
+            'org.easytesting:fest-swing:1.2',
+            'org.easytesting:fest-util:1.1.3',
+            'org.unitils:unitils-core:3.3'
+    )
 }
 
 test {
+    jvmArgs '-enableassertions', '-Djava.awt.headless=true'
     doFirst {
         systemProperty("idea.plugins.path", project.rootDir.canonicalPath + "/.test-plugins")
     }
@@ -78,4 +95,31 @@ test {
         exceptionFormat = 'full'
         showStandardStreams = true
     }
+}
+
+
+runIde {
+    //jvmArgs '-Djava.awt.headless=true'
+}
+
+buildPlugin {
+    doLast {
+        copy {
+            from 'build/distributions'
+            include "${intellij.pluginName}-*"
+            into "snapshot"
+        }
+    }
+}
+
+prepareSandbox {
+    from (['README.md', 'CHANGELOG.txt', 'LICENSE.txt']) {
+        into "${intellij.pluginName}/"
+    }
+//    from (configurations.runtimeClasspath) {
+//        exclude 'commons-lang:commons-lang'
+//        exclude 'com.intellij:forms_rt'
+//        exclude 'com.intellij:idea'
+//        exclude 'com.intellij:openapi'
+//    }
 }

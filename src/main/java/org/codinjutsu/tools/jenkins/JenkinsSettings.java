@@ -17,12 +17,12 @@
 package org.codinjutsu.tools.jenkins;
 
 import com.intellij.credentialStore.CredentialAttributes;
-import com.intellij.credentialStore.Credentials;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.components.StoragePathMacros;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Attribute;
@@ -30,25 +30,23 @@ import com.intellij.util.xmlb.annotations.Tag;
 import org.apache.commons.lang3.StringUtils;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.security.JenkinsVersion;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.codinjutsu.tools.jenkins.JenkinsComponent.JENKINS_CONTROL_PLUGIN_NAME;
-
 @State(
         name = "Jenkins.Settings",
         storages = {
-                @Storage("$PROJECT_FILE$"),
-                @Storage("$PROJECT_CONFIG_DIR$/jenkinsSettings.xml")
+                @Storage(StoragePathMacros.WORKSPACE_FILE)
         }
 )
 public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings.State> {
 
-    private State myState = new State();
+    private final State myState = new State();
+
+    public static final String JENKINS_SETTINGS_PASSWORD_KEY = "JENKINS_SETTINGS_PASSWORD_KEY";
 
     public static JenkinsSettings getSafeInstance(Project project) {
         JenkinsSettings settings = ServiceManager.getService(project, JenkinsSettings.class);
@@ -57,7 +55,6 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
 
     @Override
     public State getState() {
-//        ensurePasswordIsStored();
         return myState;
     }
 
@@ -83,23 +80,18 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
     }
 
     public String getPassword() {
-        CredentialAttributes attributes = createCredentialAttributes();
-        Credentials credentials = PasswordSafe.getInstance().get(attributes);
-        if (credentials == null) {
-            return "";
-        }
-        String password = credentials.getPasswordAsString();
+        String password = PasswordSafe.getInstance().getPassword(getPasswordCredentialAttributes());
         return StringUtils.defaultIfEmpty(password, "");
     }
 
-    @Contract(" -> new")
-    @NotNull
-    private CredentialAttributes createCredentialAttributes() {
-        return new CredentialAttributes(JENKINS_CONTROL_PLUGIN_NAME, myState.username);
+    public void setPassword(String password) {
+        PasswordSafe.getInstance().setPassword(getPasswordCredentialAttributes(), StringUtils.isNotBlank(password) ? password : "");
     }
 
-    public void setPassword(String password) {
-        PasswordSafe.getInstance().setPassword(createCredentialAttributes(), password);
+    @NotNull
+    private CredentialAttributes getPasswordCredentialAttributes() {
+        return new CredentialAttributes(JenkinsAppSettings.class.getName(), JENKINS_SETTINGS_PASSWORD_KEY,
+                JenkinsAppSettings.class);
     }
 
     public void addFavorite(@NotNull Collection<Job> jobs) {

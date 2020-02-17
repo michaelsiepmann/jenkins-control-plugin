@@ -32,27 +32,23 @@ public class JenkinsNestedViewComboRenderer extends ColoredListCellRenderer<View
     private static final Icon FAVORITE_ICON = GuiUtil.loadIcon("star.png");
 
     @Override
-    protected void customizeCellRenderer(@NotNull JList list, View value, int index, boolean selected, boolean hasFocus) {
-
-        if (value != null) {
-            if (value.hasNestedView()) {
-                setEnabled(false);
-                setFocusable(false);
-                setBackground(JBColor.LIGHT_GRAY);
-                append(value.getName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+    protected void customizeCellRenderer(@NotNull JList list, View view, int index, boolean selected, boolean hasFocus) {
+        if (view.hasNestedView()) {
+            setEnabled(false);
+            setFocusable(false);
+            setBackground(JBColor.LIGHT_GRAY);
+            append(view.getName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+        } else {
+            String viewName = view.getName();
+            if (view.isNested()) {
+                append("   " + viewName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
             } else {
-                String viewName = value.getName();
-                if (value.isNested()) {
-                    append("   " + viewName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-                } else {
-                    append(viewName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-                }
-            }
-
-            if (value instanceof FavoriteView) {
-                setIcon(FAVORITE_ICON);
+                append(viewName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
             }
         }
 
+        if (view instanceof FavoriteView) {
+            setIcon(FAVORITE_ICON);
+        }
     }
 }

@@ -15,10 +15,10 @@ import javax.swing.Icon;
 
 public class ShowJobResultsAsJUnitViewAction extends AnAction {
     private static final Icon ICON = AllIcons.Actions.GroupByTestProduction;
-
+    @NotNull
     private final BrowserPanel browserPanel;
 
-    public ShowJobResultsAsJUnitViewAction(BrowserPanel browserPanel) {
+    public ShowJobResultsAsJUnitViewAction(@NotNull BrowserPanel browserPanel) {
         super("Show test results", "Show test results as JUnit view", ICON);
         this.browserPanel = browserPanel;
     }

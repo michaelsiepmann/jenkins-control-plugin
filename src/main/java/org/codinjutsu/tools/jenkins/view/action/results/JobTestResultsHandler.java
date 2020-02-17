@@ -95,8 +95,8 @@ class JobTestResultsHandler {
     }
 
     private static class MyTestFailed extends TestFailed {
-        private String stacktrace;
-        private String message;
+        private final String stacktrace;
+        private final String message;
 
         MyTestFailed(TestCase c) {
             super(c.getName(), "");
