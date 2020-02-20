@@ -16,24 +16,55 @@
 
 package org.codinjutsu.tools.jenkins.model;
 
-/**
- *
- */
+import org.codinjutsu.tools.jenkins.logic.BuildStatusVisitor;
+
 public enum BuildStatusEnum {
 
-    FAILURE("Failure", "red"),
-    UNSTABLE("Unstable", "yellow"),
-    ABORTED("Aborted", "aborted"),
-    SUCCESS("Success", "blue"),
-    STABLE("Stable", "blue"),
-    NULL("Null", "disabled"),
+    FAILURE("Failure", "red") {
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+            visitor.visitFailed();
+        }
+    },
+    UNSTABLE("Unstable", "yellow") {
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+            visitor.visitUnstable();
+        }
+    },
+    ABORTED("Aborted", "aborted") {
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+            visitor.visitAborted();
+        }
+    },
+    SUCCESS("Success", "blue") {
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+            visitor.visitSuccess();
+        }
+    },
+    STABLE("Stable", "blue"){
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+        }
+    },
+    NULL("Null", "disabled"){
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+            visitor.visitUnknown();
+        }
+    },
     // TODO: handle the folder-case explicitly
     // instead of simply making it a BuildStatusEnum so that the icon renders
-    FOLDER("Folder", "disabled");
+    FOLDER("Folder", "disabled") {
+        @Override
+        public void visit(BuildStatusVisitor visitor) {
+        }
+    };
 
     private final String status;
     private final String color;
-
 
     BuildStatusEnum(String status, String color) {
         this.status = status;
@@ -41,18 +72,15 @@ public enum BuildStatusEnum {
     }
 
     public static BuildStatusEnum parseStatus(String status) {
-        BuildStatusEnum buildStatusEnum;
         try {
             if (status == null || "null".equals(status)) {
                 status = "NULL";
             }
-            buildStatusEnum = valueOf(status.toUpperCase());
-
+            return valueOf(status.toUpperCase());
         } catch (IllegalArgumentException ex) {
             System.out.println("Unsupported status : " + status);
-            buildStatusEnum = NULL;
+            return NULL;
         }
-        return buildStatusEnum;
     }
 
     /**
@@ -73,15 +101,13 @@ public enum BuildStatusEnum {
         return NULL;
     }
 
-
     public String getStatus() {
         return status;
     }
-
 
     public String getColor() {
         return color;
     }
 
-
+    public abstract void visit(BuildStatusVisitor visitor);
 }

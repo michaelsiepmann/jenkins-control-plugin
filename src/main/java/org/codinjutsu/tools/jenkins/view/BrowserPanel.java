@@ -233,27 +233,11 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     private static void visit(@NotNull ViewElement viewElement, BuildStatusVisitor buildStatusVisitor) {
         Build lastBuild = viewElement.getLastBuild();
         if (viewElement.isBuildable() && lastBuild != null) {
-            BuildStatusEnum status = lastBuild.getStatus();
-            switch (status) {
-                case FAILURE:
-                    buildStatusVisitor.visitFailed();
-                    return;
-                case SUCCESS:
-                    buildStatusVisitor.visitSuccess();
-                    return;
-                case UNSTABLE:
-                    buildStatusVisitor.visitUnstable();
-                    return;
-                case ABORTED:
-                    buildStatusVisitor.visitAborted();
-                    return;
-                case NULL:
-                    buildStatusVisitor.visitUnknown();
-                    return;
-            }
+            lastBuild.getStatus().visit(buildStatusVisitor);
         }
-
-        buildStatusVisitor.visitUnknown();
+        else {
+            buildStatusVisitor.visitUnknown();
+        }
     }
 
     private void update() {

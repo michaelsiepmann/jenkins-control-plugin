@@ -184,6 +184,7 @@ public class Job extends ViewElement {
         parameters.add(JobParameterDefinition.create(paramName, paramType, defaultValue, choices));
     }
 
+    @NotNull
     @Override
     public String getColor() {
         return color;
@@ -212,7 +213,11 @@ public class Job extends ViewElement {
     }
 
     @Override
+    @Nullable
     public Build getLastBuild() {
+        if (lastBuild == null && !lastBuilds.isEmpty()) {
+            return lastBuilds.iterator().next();
+        }
         return lastBuild;
     }
 
@@ -221,6 +226,7 @@ public class Job extends ViewElement {
         this.lastBuild = lastBuild;
     }
 
+    @NotNull
     @Override
     public Collection<Build> getLastBuilds() {
         return lastBuilds;
@@ -258,15 +264,9 @@ public class Job extends ViewElement {
     }
 
     @Override
-    public boolean hasParameter(String name) {
-        if (hasParameters()) {
-            for (JobParameterDefinition parameter : parameters) {
-                if (parameter.getName().equals(name)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    public boolean hasParameter(@NotNull String name) {
+        return hasParameters() && parameters.stream()
+                                            .anyMatch(parameter -> parameter.getName().equals(name));
     }
 
     @Override
