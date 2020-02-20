@@ -213,7 +213,7 @@ public class ConfigurationPanel {
                 || abortedCheckBox.isSelected() != jenkinsAppSettings.shouldDisplayAborted();
 
         return !jenkinsAppSettings.getServerUrl().equals(serverUrl.getText())
-                || !jenkinsAppSettings.getFixedURL().equals(getFixedURL())
+                || !StringUtils.equals(jenkinsAppSettings.getFixedURL(), getFixedURL())
                 || jenkinsAppSettings.getBuildDelay() != getBuildDelay()
                 || jenkinsAppSettings.getJobRefreshPeriod() != getJobRefreshPeriod()
                 || jenkinsAppSettings.getRssRefreshPeriod() != getRssRefreshPeriod()
