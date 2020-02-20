@@ -384,14 +384,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         return jenkins.getViewByName(lastSelectedViewName);
     }
 
-    public void init() {
-        initGui();
-        if (!isConfigured()) { //run when there is not configuration
-            handleEmptyConfiguration();
-        }
-    }
-
-    private void initGui() {
+    public void initGui() {
         installActionsInToolbar();
         installActionsInPopupMenu();
     }

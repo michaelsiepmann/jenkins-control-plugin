@@ -25,6 +25,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.changes.ChangeList;
+import com.intellij.openapi.vcs.changes.patch.PatchWriter;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.IdeBorderFactory;
@@ -165,7 +166,8 @@ public class SelectJobDialog extends JDialog {
                 changes.addAll(changeList.getChanges());
             }
         }
-        List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(project, changes, project.getBasePath(), false);
+        String base = PatchWriter.calculateBaseForWritingPatch(project, changes).getPath();
+        List<FilePatch> patches = IdeaTextPatchBuilder.buildPatch(project, changes, base, false);
         UnifiedDiffWriter.write(project, patches, writer, CodeStyle.getProjectOrDefaultSettings(project).getLineSeparator(), null);
         writer.close();
     }

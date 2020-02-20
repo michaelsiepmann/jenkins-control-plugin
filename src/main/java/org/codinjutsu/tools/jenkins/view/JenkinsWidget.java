@@ -41,7 +41,6 @@ import java.awt.event.MouseEvent;
 public class JenkinsWidget extends NonOpaquePanel implements CustomStatusBarWidget {
 
     private final Project project;
-    private StatusBar myStatusBar;
 
     public static JenkinsWidget getInstance(Project project) {
         return ServiceManager.getService(project, JenkinsWidget.class);
@@ -66,6 +65,7 @@ public class JenkinsWidget extends NonOpaquePanel implements CustomStatusBarWidg
 
     }
 
+    @NotNull
     private JComponent createStatusIcon(BuildStatusAggregator aggregator) {
         JComponent statusIcon = BuildStatusIcon.createIcon(aggregator);
         statusIcon.addMouseListener(new MouseAdapter() {
@@ -101,17 +101,14 @@ public class JenkinsWidget extends NonOpaquePanel implements CustomStatusBarWidg
         return JenkinsWidget.class.getName();
     }
 
+    @Override
     public void install(@NotNull StatusBar statusBar) {}
 
+    @Override
     public void dispose() {}
 
     @Override
     public JComponent getComponent() {
         return this;
-    }
-
-    @Override
-    public WidgetPresentation getPresentation(@NotNull PlatformType platformType) {
-        return null;
     }
 }

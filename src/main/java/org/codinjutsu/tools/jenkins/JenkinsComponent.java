@@ -16,7 +16,6 @@
 
 package org.codinjutsu.tools.jenkins;
 
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
@@ -29,8 +28,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 
 
-public class JenkinsComponent implements ProjectComponent, SearchableConfigurable {
-
+public class JenkinsComponent implements SearchableConfigurable {
 
     static final String JENKINS_CONTROL_PLUGIN_NAME = "Jenkins Plugin";
     private static final String JENKINS_CONTROL_COMPONENT_NAME = "JenkinsComponent";
@@ -48,20 +46,6 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
         this.jenkinsSettings = JenkinsSettings.getSafeInstance(project);
     }
 
-
-    @Override
-    public void projectOpened() {
-
-        JenkinsWindowManager.getInstance(project);
-    }
-
-
-    @Override
-    public void projectClosed() {
-        JenkinsWindowManager.getInstance(project).unregisterMyself();
-    }
-
-
     @Override
     public JComponent createComponent() {
         if (configurationPanel == null) {
@@ -70,12 +54,10 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
         return configurationPanel.getRootPanel();
     }
 
-
     @Override
     public boolean isModified() {
         return configurationPanel != null && configurationPanel.isModified(jenkinsAppSettings, jenkinsSettings);
     }
-
 
     @Override
     public void disposeUIResources() {
@@ -87,26 +69,22 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
         return "preferences.jenkins";
     }
 
-
     @Override
     public void apply() throws ConfigurationException {
         if (configurationPanel != null) {
             try {
                 configurationPanel.applyConfigurationData(jenkinsAppSettings, jenkinsSettings);
-                JenkinsWindowManager.getInstance(project).reloadConfiguration();
+                JenkinsWindowManager.getInstance(project).ifPresent(JenkinsWindowManager::reloadConfiguration);
             } catch (org.codinjutsu.tools.jenkins.exception.ConfigurationException ex) {
                 throw new ConfigurationException(ex.getMessage());
             }
         }
     }
 
-
-    @Override
     @NotNull
     public String getComponentName() {
         return JENKINS_CONTROL_COMPONENT_NAME;
     }
-
 
     @Override
     @Nls
@@ -114,27 +92,13 @@ public class JenkinsComponent implements ProjectComponent, SearchableConfigurabl
         return JENKINS_CONTROL_PLUGIN_NAME;
     }
 
-
     public Icon getIcon() {
         return null;
     }
 
-
     @Override
     public void reset() {
         configurationPanel.loadConfigurationData(jenkinsAppSettings, jenkinsSettings);
-    }
-
-
-    @Override
-    public void initComponent() {
-
-    }
-
-
-    @Override
-    public void disposeComponent() {
-
     }
 
     @NotNull

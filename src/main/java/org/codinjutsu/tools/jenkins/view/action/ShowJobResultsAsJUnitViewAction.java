@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.view.BrowserPanel;
-import org.codinjutsu.tools.jenkins.view.action.results.JobTestResultsToolWindow;
+import org.codinjutsu.tools.jenkins.view.extension.ViewTestResultsAsJUnit;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
@@ -26,17 +26,9 @@ public class ShowJobResultsAsJUnitViewAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getData(PlatformDataKeys.PROJECT);
-        Job job = browserPanel.getSelectedJob();
-        if (job == null) {
-            Build selectedBuild = browserPanel.getSelectedBuild();
-            new JobTestResultsToolWindow(project, selectedBuild, buildLabel(selectedBuild)).showMavenToolWindow();
-        } else {
-            new JobTestResultsToolWindow(project, job.getLastBuild(), job.getJobName()).showMavenToolWindow();
+        if (project != null) {
+            new ViewTestResultsAsJUnit().handle(browserPanel, project);
         }
-    }
-
-    private String buildLabel(@NotNull Build build) {
-        return String.format("%s #%d", build.getJob().getJobName(), build.getNumber());
     }
 
     @Override
